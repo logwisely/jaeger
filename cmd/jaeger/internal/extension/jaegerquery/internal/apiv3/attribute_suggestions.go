@@ -24,24 +24,28 @@ func collectAttributeNames(traces []ptrace.Traces) []string {
 		rss := tr.ResourceSpans()
 		for i := 0; i < rss.Len(); i++ {
 			rs := rss.At(i)
-			rs.Resource().Attributes().Range(func(k string, _ pcommon.Value) bool {
-				if isInternalAttributeKey(k) {
+			rs.Resource().
+				Attributes().
+				Range(func(k string, _ pcommon.Value) bool {
+					if isInternalAttributeKey(k) {
+						return true
+					}
+					set[k] = struct{}{}
 					return true
-				}
-				set[k] = struct{}{}
-				return true
-			})
+				})
 			sss := rs.ScopeSpans()
 			for j := 0; j < sss.Len(); j++ {
 				spans := sss.At(j).Spans()
 				for k := 0; k < spans.Len(); k++ {
-					spans.At(k).Attributes().Range(func(key string, _ pcommon.Value) bool {
-						if isInternalAttributeKey(key) {
+					spans.At(k).
+						Attributes().
+						Range(func(key string, _ pcommon.Value) bool {
+							if isInternalAttributeKey(key) {
+								return true
+							}
+							set[key] = struct{}{}
 							return true
-						}
-						set[key] = struct{}{}
-						return true
-					})
+						})
 				}
 			}
 		}
@@ -54,7 +58,10 @@ func collectAttributeNames(traces []ptrace.Traces) []string {
 	return names
 }
 
-func collectAttributeValueCounts(traces []ptrace.Traces, attributeName string) map[string]int {
+func collectAttributeValueCounts(
+	traces []ptrace.Traces,
+	attributeName string,
+) map[string]int {
 	counts := make(map[string]int)
 	if attributeName == "" {
 		return counts
@@ -66,12 +73,20 @@ func collectAttributeValueCounts(traces []ptrace.Traces, attributeName string) m
 		rss := tr.ResourceSpans()
 		for i := 0; i < rss.Len(); i++ {
 			rs := rss.At(i)
-			incrementCountsForAttribute(rs.Resource().Attributes(), attributeName, counts)
+			incrementCountsForAttribute(
+				rs.Resource().Attributes(),
+				attributeName,
+				counts,
+			)
 			sss := rs.ScopeSpans()
 			for j := 0; j < sss.Len(); j++ {
 				spans := sss.At(j).Spans()
 				for k := 0; k < spans.Len(); k++ {
-					incrementCountsForAttribute(spans.At(k).Attributes(), attributeName, counts)
+					incrementCountsForAttribute(
+						spans.At(k).Attributes(),
+						attributeName,
+						counts,
+					)
 				}
 			}
 		}
@@ -79,7 +94,11 @@ func collectAttributeValueCounts(traces []ptrace.Traces, attributeName string) m
 	return counts
 }
 
-func incrementCountsForAttribute(attrs pcommon.Map, attributeName string, counts map[string]int) {
+func incrementCountsForAttribute(
+	attrs pcommon.Map,
+	attributeName string,
+	counts map[string]int,
+) {
 	v, ok := attrs.Get(attributeName)
 	if !ok {
 		return
