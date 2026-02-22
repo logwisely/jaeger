@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"sort"
+	"time"
 
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"google.golang.org/grpc/codes"
@@ -15,6 +17,7 @@ import (
 
 	"github.com/jaegertracing/jaeger-idl/model/v1"
 	"github.com/jaegertracing/jaeger/cmd/jaeger/internal/extension/jaegerquery/querysvc"
+	"github.com/jaegertracing/jaeger/internal/jiter"
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
@@ -126,6 +129,146 @@ func (h *Handler) GetOperations(ctx context.Context, request *api_v3.GetOperatio
 	return &api_v3.GetOperationsResponse{
 		Operations: apiOperations,
 	}, nil
+}
+
+// GetDependencies implements api_v3.QueryService's GetDependencies.
+func (h *Handler) GetDependencies(ctx context.Context, request *api_v3.GetDependenciesRequest) (*api_v3.DependenciesResponse, error) {
+	if request == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing request")
+	}
+	startTime := request.GetStartTime()
+	endTime := request.GetEndTime()
+	if startTime.IsZero() || endTime.IsZero() {
+		return nil, status.Error(codes.InvalidArgument, "start_time and end_time are required")
+	}
+
+	deps, err := h.QueryService.GetDependencies(ctx, endTime, endTime.Sub(startTime))
+	if err != nil {
+		return nil, err
+	}
+	apiDeps := make([]*api_v3.Dependency, len(deps))
+	for i := range deps {
+		apiDeps[i] = &api_v3.Dependency{
+			Parent:    deps[i].Parent,
+			Child:     deps[i].Child,
+			CallCount: deps[i].CallCount,
+		}
+	}
+	return &api_v3.DependenciesResponse{Dependencies: apiDeps}, nil
+}
+
+// GetIndexedAttributeNames implements api_v3.QueryService's GetIndexedAttributeNames.
+func (h *Handler) GetIndexedAttributesNames(
+	ctx context.Context,
+	request *api_v3.GetIndexedAttributesNamesRequest,
+) (*api_v3.GetAttributesNamesResponse, error) {
+	query := request.GetQuery()
+	if query == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing query")
+	}
+	if query.GetStartTimeMin().IsZero() || query.GetStartTimeMax().IsZero() {
+		return nil, status.Error(codes.InvalidArgument, "start_time_min and start_time_max are required")
+	}
+
+	searchDepth := int(query.GetSearchDepth())
+	if searchDepth <= 0 {
+		searchDepth = defaultAttributeSuggestionSearchDepth
+	}
+	limit := int(request.GetLimit())
+	if limit <= 0 {
+		limit = defaultAttributeNamesLimit
+	}
+
+	queryParams := querysvc.TraceQueryParams{
+		TraceQueryParams: tracestore.TraceQueryParams{
+			ServiceName:   query.GetServiceName(),
+			OperationName: query.GetOperationName(),
+			Attributes:    jptrace.PlainMapToPcommonMap(query.GetAttributes()),
+			SearchDepth:   searchDepth,
+			StartTimeMin:  query.GetStartTimeMin(),
+			StartTimeMax:  query.GetStartTimeMax(),
+			DurationMin:   time.Duration(query.GetDurationMin()),
+			DurationMax:   time.Duration(query.GetDurationMax()),
+		},
+		RawTraces: query.GetRawTraces(),
+	}
+
+	findTracesIter := h.QueryService.FindTraces(ctx, queryParams)
+	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	if err != nil {
+		return nil, err
+	}
+	names := collectAttributeNames(traces)
+	sort.Strings(names)
+	if len(names) > limit {
+		names = names[:limit]
+	}
+	return &api_v3.GetAttributesNamesResponse{Names: names}, nil
+}
+
+// GetTopKAttributeValues implements api_v3.QueryService's GetTopKAttributeValues.
+func (h *Handler) GetTopKAttributeValues(ctx context.Context, request *api_v3.GetTopKAttributeValuesRequest) (*api_v3.GetTopKAttributeValuesResponse, error) {
+	resp, err := h.getKAttributeValues(ctx, request.GetQuery(), request.GetAttributeName(), int(request.GetK()), true)
+	if err != nil {
+		return nil, err
+	}
+	return &api_v3.GetTopKAttributeValuesResponse{Values: resp}, nil
+}
+
+// GetBottomKAttributeValues implements api_v3.QueryService's GetBottomKAttributeValues.
+func (h *Handler) GetBottomKAttributeValues(ctx context.Context, request *api_v3.GetBottomKAttributeValuesRequest) (*api_v3.GetBottomKAttributeValuesResponse, error) {
+	resp, err := h.getKAttributeValues(ctx, request.GetQuery(), request.GetAttributeName(), int(request.GetK()), false)
+	if err != nil {
+		return nil, err
+	}
+	return &api_v3.GetBottomKAttributeValuesResponse{Values: resp}, nil
+}
+
+func (h *Handler) getKAttributeValues(
+	ctx context.Context,
+	query *api_v3.TraceQueryParameters,
+	attributeName string,
+	k int,
+	desc bool,
+) ([]string, error) {
+	if query == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing query")
+	}
+	if attributeName == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing attribute_name")
+	}
+	if query.GetStartTimeMin().IsZero() || query.GetStartTimeMax().IsZero() {
+		return nil, status.Error(codes.InvalidArgument, "start_time_min and start_time_max are required")
+	}
+	if k <= 0 {
+		k = defaultAttributeValuesK
+	}
+	searchDepth := int(query.GetSearchDepth())
+	if searchDepth <= 0 {
+		searchDepth = defaultAttributeSuggestionSearchDepth
+	}
+
+	queryParams := querysvc.TraceQueryParams{
+		TraceQueryParams: tracestore.TraceQueryParams{
+			ServiceName:   query.GetServiceName(),
+			OperationName: query.GetOperationName(),
+			Attributes:    jptrace.PlainMapToPcommonMap(query.GetAttributes()),
+			SearchDepth:   searchDepth,
+			StartTimeMin:  query.GetStartTimeMin(),
+			StartTimeMax:  query.GetStartTimeMax(),
+			DurationMin:   time.Duration(query.GetDurationMin()),
+			DurationMax:   time.Duration(query.GetDurationMax()),
+		},
+		RawTraces: query.GetRawTraces(),
+	}
+
+	findTracesIter := h.QueryService.FindTraces(ctx, queryParams)
+	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	if err != nil {
+		return nil, err
+	}
+	counts := collectAttributeValueCounts(traces, attributeName)
+	return selectKFromCounts(counts, k, desc), nil
 }
 
 func receiveTraces(

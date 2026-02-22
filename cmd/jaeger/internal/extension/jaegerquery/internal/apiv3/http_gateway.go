@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"time"
 
@@ -36,6 +37,7 @@ const (
 	paramRawTraces      = "raw_traces"
 	paramServiceName    = "query.service_name" // find traces
 	paramOperationName  = "query.operation_name"
+	paramAttributes     = "query.attributes"
 	paramTimeMin        = "query.start_time_min"
 	paramTimeMax        = "query.start_time_max"
 	paramNumTraces      = "query.num_traces"
@@ -43,10 +45,18 @@ const (
 	paramDurationMax    = "query.duration_max"
 	paramQueryRawTraces = "query.raw_traces"
 
+	paramAttributeName = "attribute_name"
+	paramLimit         = "limit"
+	paramK             = "k"
+
 	routeGetTrace      = "/api/v3/traces/{" + paramTraceID + "}"
 	routeFindTraces    = "/api/v3/traces"
 	routeGetServices   = "/api/v3/services"
 	routeGetOperations = "/api/v3/operations"
+
+	routeGetIndexedAttributesNames = "/api/v3/attributes/indexed/names"
+	routeGetTopKAttributeValues    = "/api/v3/attributes/values/topk"
+	routeGetBottomKAttributeValues = "/api/v3/attributes/values/bottomk"
 )
 
 // HTTPGateway exposes APIv3 HTTP endpoints.
@@ -63,6 +73,24 @@ func (h *HTTPGateway) RegisterRoutes(router *http.ServeMux) {
 	h.addRoute(router, h.findTraces, routeFindTraces, http.MethodGet)
 	h.addRoute(router, h.getServices, routeGetServices, http.MethodGet)
 	h.addRoute(router, h.getOperations, routeGetOperations, http.MethodGet)
+	h.addRoute(
+		router,
+		h.getIndexedAttributesNames,
+		routeGetIndexedAttributesNames,
+		http.MethodGet,
+	)
+	h.addRoute(
+		router,
+		h.getTopKAttributeValues,
+		routeGetTopKAttributeValues,
+		http.MethodGet,
+	)
+	h.addRoute(
+		router,
+		h.getBottomKAttributeValues,
+		routeGetBottomKAttributeValues,
+		http.MethodGet,
+	)
 }
 
 // addRoute adds a new endpoint to the router with given path and handler function.
@@ -81,7 +109,11 @@ func (h *HTTPGateway) addRoute(
 
 // tryHandleError checks if the passed error is not nil and handles it by writing
 // an error response to the client. Otherwise it returns false.
-func (h *HTTPGateway) tryHandleError(w http.ResponseWriter, err error, statusCode int) bool {
+func (h *HTTPGateway) tryHandleError(
+	w http.ResponseWriter,
+	err error,
+	statusCode int,
+) bool {
 	if err == nil {
 		return false
 	}
@@ -104,11 +136,19 @@ func (h *HTTPGateway) tryHandleError(w http.ResponseWriter, err error, statusCod
 }
 
 // tryParamError is similar to tryHandleError but specifically for reporting malformed params.
-func (h *HTTPGateway) tryParamError(w http.ResponseWriter, err error, paramName string) bool {
+func (h *HTTPGateway) tryParamError(
+	w http.ResponseWriter,
+	err error,
+	paramName string,
+) bool {
 	if err == nil {
 		return false
 	}
-	return h.tryHandleError(w, fmt.Errorf("malformed parameter %s: %w", paramName, err), http.StatusBadRequest)
+	return h.tryHandleError(
+		w,
+		fmt.Errorf("malformed parameter %s: %w", paramName, err),
+		http.StatusBadRequest,
+	)
 }
 
 func (h *HTTPGateway) returnTrace(td ptrace.Traces, w http.ResponseWriter) {
@@ -119,7 +159,11 @@ func (h *HTTPGateway) returnTrace(td ptrace.Traces, w http.ResponseWriter) {
 	h.marshalResponse(response, w)
 }
 
-func (h *HTTPGateway) returnTraces(traces []ptrace.Traces, err error, w http.ResponseWriter) {
+func (h *HTTPGateway) returnTraces(
+	traces []ptrace.Traces,
+	err error,
+	w http.ResponseWriter,
+) {
 	if h.tryHandleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -147,7 +191,10 @@ func (h *HTTPGateway) returnTraces(traces []ptrace.Traces, err error, w http.Res
 	h.returnTrace(combinedTrace, w)
 }
 
-func (*HTTPGateway) marshalResponse(response proto.Message, w http.ResponseWriter) {
+func (*HTTPGateway) marshalResponse(
+	response proto.Message,
+	w http.ResponseWriter,
+) {
 	_ = new(jsonpb.Marshaler).Marshal(w, response)
 }
 
@@ -204,13 +251,30 @@ func (h *HTTPGateway) findTraces(w http.ResponseWriter, r *http.Request) {
 	h.returnTraces(traces, err, w)
 }
 
-func (h *HTTPGateway) parseFindTracesQuery(q url.Values, w http.ResponseWriter) (*querysvc.TraceQueryParams, bool) {
+func (h *HTTPGateway) parseFindTracesQuery(
+	q url.Values,
+	w http.ResponseWriter,
+) (*querysvc.TraceQueryParams, bool) {
 	queryParams := &querysvc.TraceQueryParams{
 		TraceQueryParams: tracestore.TraceQueryParams{
 			ServiceName:   q.Get(paramServiceName),
 			OperationName: q.Get(paramOperationName),
 			Attributes:    pcommon.NewMap(), // most curiously not supported by grpc-gateway
 		},
+	}
+
+	if attrs := q.Get(paramAttributes); attrs != "" {
+		var m map[string]string
+		if err := json.Unmarshal([]byte(attrs), &m); h.tryParamError(
+			w,
+			err,
+			paramAttributes,
+		) {
+			return nil, true
+		}
+		for k, v := range m {
+			queryParams.Attributes.PutStr(k, v)
+		}
 	}
 
 	timeMin := q.Get(paramTimeMin)
@@ -263,6 +327,113 @@ func (h *HTTPGateway) parseFindTracesQuery(q url.Values, w http.ResponseWriter) 
 	return queryParams, false
 }
 
+func (h *HTTPGateway) getIndexedAttributesNames(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	queryParams, shouldReturn := h.parseFindTracesQuery(r.URL.Query(), w)
+	if shouldReturn {
+		return
+	}
+	if queryParams.SearchDepth == 0 {
+		queryParams.SearchDepth = defaultAttributeSuggestionSearchDepth
+	}
+	limit := defaultAttributeNamesLimit
+	if l := r.URL.Query().Get(paramLimit); l != "" {
+		parsed, err := strconv.Atoi(l)
+		if h.tryParamError(w, err, paramLimit) {
+			return
+		}
+		limit = parsed
+	}
+	if limit <= 0 {
+		limit = defaultAttributeNamesLimit
+	}
+
+	findTracesIter := h.QueryService.FindTraces(r.Context(), *queryParams)
+	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	if h.tryHandleError(w, err, http.StatusInternalServerError) {
+		return
+	}
+	names := collectAttributeNames(traces)
+	sort.Strings(names)
+	if len(names) > limit {
+		names = names[:limit]
+	}
+	h.marshalResponse(
+		&api_v3.GetAttributesNamesResponse{Names: names},
+		w,
+	)
+}
+
+func (h *HTTPGateway) getTopKAttributeValues(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	h.getKAttributeValues(w, r, true)
+}
+
+func (h *HTTPGateway) getBottomKAttributeValues(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	h.getKAttributeValues(w, r, false)
+}
+
+func (h *HTTPGateway) getKAttributeValues(
+	w http.ResponseWriter,
+	r *http.Request,
+	desc bool,
+) {
+	query := r.URL.Query()
+	attributeName := query.Get(paramAttributeName)
+	if attributeName == "" {
+		h.tryHandleError(
+			w,
+			fmt.Errorf("%s is required", paramAttributeName),
+			http.StatusBadRequest,
+		)
+		return
+	}
+	queryParams, shouldReturn := h.parseFindTracesQuery(query, w)
+	if shouldReturn {
+		return
+	}
+	if queryParams.SearchDepth == 0 {
+		queryParams.SearchDepth = defaultAttributeSuggestionSearchDepth
+	}
+	k := defaultAttributeValuesK
+	if s := query.Get(paramK); s != "" {
+		parsed, err := strconv.Atoi(s)
+		if h.tryParamError(w, err, paramK) {
+			return
+		}
+		k = parsed
+	}
+	if k <= 0 {
+		k = defaultAttributeValuesK
+	}
+
+	findTracesIter := h.QueryService.FindTraces(r.Context(), *queryParams)
+	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	if h.tryHandleError(w, err, http.StatusInternalServerError) {
+		return
+	}
+	counts := collectAttributeValueCounts(traces, attributeName)
+	values := selectKFromCounts(counts, k, desc)
+	if desc {
+		h.marshalResponse(
+			&api_v3.GetTopKAttributeValuesResponse{Values: values},
+			w,
+		)
+		return
+	}
+	h.marshalResponse(
+		&api_v3.GetBottomKAttributeValuesResponse{Values: values},
+		w,
+	)
+}
+
 func (h *HTTPGateway) getServices(w http.ResponseWriter, r *http.Request) {
 	services, err := h.QueryService.GetServices(r.Context())
 	if h.tryHandleError(w, err, http.StatusInternalServerError) {
@@ -297,5 +468,8 @@ func (h *HTTPGateway) getOperations(w http.ResponseWriter, r *http.Request) {
 			SpanKind: spanKind,
 		}
 	}
-	h.marshalResponse(&api_v3.GetOperationsResponse{Operations: apiOperations}, w)
+	h.marshalResponse(
+		&api_v3.GetOperationsResponse{Operations: apiOperations},
+		w,
+	)
 }
