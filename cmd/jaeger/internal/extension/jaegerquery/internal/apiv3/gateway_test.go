@@ -305,3 +305,7 @@ func (gw *testGateway) verifyGetTraces(
 		TraceID()
 	assert.Equal(t, expectedTraceID.String(), traceID.String())
 }
+
+func TestGatewayAPIs(t *testing.T) {
+	runGatewayTests(t, "/", func(_ *http.Request) {})
+}
