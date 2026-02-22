@@ -1,0 +1,8 @@
+{
+  "names": [
+    "error",
+    "http.method",
+    "http.status_code",
+    "resource.attr"
+  ]
+}

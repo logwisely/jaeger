@@ -6,6 +6,7 @@ package api_v3
 import (
 	context "context"
 	fmt "fmt"
+	_ "github.com/gogo/googleapis/google/api"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
@@ -434,7 +435,7 @@ type GetOperationsRequest struct {
 	Service string `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
 	// Optional span kind.
 	SpanKind string `protobuf:"bytes,2,opt,name=span_kind,json=spanKind,proto3" json:"span_kind,omitempty"`
-	// Optional. The workspace ID to filter Services.
+	// Optional. The workspace ID to filter Operations.
 	WorkspaceId          string   `protobuf:"bytes,3,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -495,440 +496,6 @@ func (m *GetOperationsRequest) GetWorkspaceId() string {
 	return ""
 }
 
-// Request object to get list of hot attribute names.
-type GetHotAttributeNamesRequest struct {
-	// Optional. The workspace ID to filter Services.
-	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	// Required service name.
-	Service string `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
-	// Optional. operation_name filters by a specific operation name.
-	OperationName        string   `protobuf:"bytes,3,opt,name=operation_name,json=operationName,proto3" json:"operation_name,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetHotAttributeNamesRequest) Reset()         { *m = GetHotAttributeNamesRequest{} }
-func (m *GetHotAttributeNamesRequest) String() string { return proto.CompactTextString(m) }
-func (*GetHotAttributeNamesRequest) ProtoMessage()    {}
-func (*GetHotAttributeNamesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{6}
-}
-func (m *GetHotAttributeNamesRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetHotAttributeNamesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetHotAttributeNamesRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetHotAttributeNamesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetHotAttributeNamesRequest.Merge(m, src)
-}
-func (m *GetHotAttributeNamesRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetHotAttributeNamesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetHotAttributeNamesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetHotAttributeNamesRequest proto.InternalMessageInfo
-
-func (m *GetHotAttributeNamesRequest) GetWorkspaceId() string {
-	if m != nil {
-		return m.WorkspaceId
-	}
-	return ""
-}
-
-func (m *GetHotAttributeNamesRequest) GetService() string {
-	if m != nil {
-		return m.Service
-	}
-	return ""
-}
-
-func (m *GetHotAttributeNamesRequest) GetOperationName() string {
-	if m != nil {
-		return m.OperationName
-	}
-	return ""
-}
-
-// Response object to get attribute names.
-type GetAttributeNamesResponse struct {
-	Names                []string `protobuf:"bytes,1,rep,name=names,proto3" json:"names,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetAttributeNamesResponse) Reset()         { *m = GetAttributeNamesResponse{} }
-func (m *GetAttributeNamesResponse) String() string { return proto.CompactTextString(m) }
-func (*GetAttributeNamesResponse) ProtoMessage()    {}
-func (*GetAttributeNamesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{7}
-}
-func (m *GetAttributeNamesResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetAttributeNamesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetAttributeNamesResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetAttributeNamesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetAttributeNamesResponse.Merge(m, src)
-}
-func (m *GetAttributeNamesResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetAttributeNamesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetAttributeNamesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetAttributeNamesResponse proto.InternalMessageInfo
-
-func (m *GetAttributeNamesResponse) GetNames() []string {
-	if m != nil {
-		return m.Names
-	}
-	return nil
-}
-
-// Request object to get top-k attribute values.
-type GetTopKAttributeValuesRequest struct {
-	// Optional. The workspace ID to filter Services.
-	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	// Required service name.
-	Service string `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
-	// Optional. operation_name filters by a specific operation name.
-	OperationName string `protobuf:"bytes,3,opt,name=operation_name,json=operationName,proto3" json:"operation_name,omitempty"`
-	// Required attribute name.
-	AttributeName string `protobuf:"bytes,4,opt,name=attribute_name,json=attributeName,proto3" json:"attribute_name,omitempty"`
-	// Required k. The number of top values to return. default is 10.
-	K                    int32    `protobuf:"varint,5,opt,name=k,proto3" json:"k,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetTopKAttributeValuesRequest) Reset()         { *m = GetTopKAttributeValuesRequest{} }
-func (m *GetTopKAttributeValuesRequest) String() string { return proto.CompactTextString(m) }
-func (*GetTopKAttributeValuesRequest) ProtoMessage()    {}
-func (*GetTopKAttributeValuesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{8}
-}
-func (m *GetTopKAttributeValuesRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetTopKAttributeValuesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetTopKAttributeValuesRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetTopKAttributeValuesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetTopKAttributeValuesRequest.Merge(m, src)
-}
-func (m *GetTopKAttributeValuesRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetTopKAttributeValuesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetTopKAttributeValuesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetTopKAttributeValuesRequest proto.InternalMessageInfo
-
-func (m *GetTopKAttributeValuesRequest) GetWorkspaceId() string {
-	if m != nil {
-		return m.WorkspaceId
-	}
-	return ""
-}
-
-func (m *GetTopKAttributeValuesRequest) GetService() string {
-	if m != nil {
-		return m.Service
-	}
-	return ""
-}
-
-func (m *GetTopKAttributeValuesRequest) GetOperationName() string {
-	if m != nil {
-		return m.OperationName
-	}
-	return ""
-}
-
-func (m *GetTopKAttributeValuesRequest) GetAttributeName() string {
-	if m != nil {
-		return m.AttributeName
-	}
-	return ""
-}
-
-func (m *GetTopKAttributeValuesRequest) GetK() int32 {
-	if m != nil {
-		return m.K
-	}
-	return 0
-}
-
-type AttributeValueCount struct {
-	Value                string   `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	Count                int64    `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *AttributeValueCount) Reset()         { *m = AttributeValueCount{} }
-func (m *AttributeValueCount) String() string { return proto.CompactTextString(m) }
-func (*AttributeValueCount) ProtoMessage()    {}
-func (*AttributeValueCount) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{9}
-}
-func (m *AttributeValueCount) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *AttributeValueCount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_AttributeValueCount.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *AttributeValueCount) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AttributeValueCount.Merge(m, src)
-}
-func (m *AttributeValueCount) XXX_Size() int {
-	return m.Size()
-}
-func (m *AttributeValueCount) XXX_DiscardUnknown() {
-	xxx_messageInfo_AttributeValueCount.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AttributeValueCount proto.InternalMessageInfo
-
-func (m *AttributeValueCount) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
-}
-
-func (m *AttributeValueCount) GetCount() int64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
-type GetTopKAttributeValuesResponse struct {
-	Values               []*AttributeValueCount `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *GetTopKAttributeValuesResponse) Reset()         { *m = GetTopKAttributeValuesResponse{} }
-func (m *GetTopKAttributeValuesResponse) String() string { return proto.CompactTextString(m) }
-func (*GetTopKAttributeValuesResponse) ProtoMessage()    {}
-func (*GetTopKAttributeValuesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{10}
-}
-func (m *GetTopKAttributeValuesResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetTopKAttributeValuesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetTopKAttributeValuesResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetTopKAttributeValuesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetTopKAttributeValuesResponse.Merge(m, src)
-}
-func (m *GetTopKAttributeValuesResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetTopKAttributeValuesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetTopKAttributeValuesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetTopKAttributeValuesResponse proto.InternalMessageInfo
-
-func (m *GetTopKAttributeValuesResponse) GetValues() []*AttributeValueCount {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
-type GetBottomKAttributeValuesResponse struct {
-	Values               []*AttributeValueCount `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *GetBottomKAttributeValuesResponse) Reset()         { *m = GetBottomKAttributeValuesResponse{} }
-func (m *GetBottomKAttributeValuesResponse) String() string { return proto.CompactTextString(m) }
-func (*GetBottomKAttributeValuesResponse) ProtoMessage()    {}
-func (*GetBottomKAttributeValuesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{11}
-}
-func (m *GetBottomKAttributeValuesResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetBottomKAttributeValuesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetBottomKAttributeValuesResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetBottomKAttributeValuesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetBottomKAttributeValuesResponse.Merge(m, src)
-}
-func (m *GetBottomKAttributeValuesResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetBottomKAttributeValuesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetBottomKAttributeValuesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetBottomKAttributeValuesResponse proto.InternalMessageInfo
-
-func (m *GetBottomKAttributeValuesResponse) GetValues() []*AttributeValueCount {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
-// Request object to get bottom-k attribute values.
-type GetBottomKAttributeValuesRequest struct {
-	// Optional. The workspace ID to filter Services.
-	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	// Required service name.
-	Service string `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
-	// Optional. operation_name filters by a specific operation name.
-	OperationName string `protobuf:"bytes,3,opt,name=operation_name,json=operationName,proto3" json:"operation_name,omitempty"`
-	// Required attribute name.
-	AttributeName string `protobuf:"bytes,4,opt,name=attribute_name,json=attributeName,proto3" json:"attribute_name,omitempty"`
-	// Required k. The number of bottom values to return. default is 10.
-	K                    int32    `protobuf:"varint,5,opt,name=k,proto3" json:"k,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetBottomKAttributeValuesRequest) Reset()         { *m = GetBottomKAttributeValuesRequest{} }
-func (m *GetBottomKAttributeValuesRequest) String() string { return proto.CompactTextString(m) }
-func (*GetBottomKAttributeValuesRequest) ProtoMessage()    {}
-func (*GetBottomKAttributeValuesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{12}
-}
-func (m *GetBottomKAttributeValuesRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *GetBottomKAttributeValuesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_GetBottomKAttributeValuesRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *GetBottomKAttributeValuesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetBottomKAttributeValuesRequest.Merge(m, src)
-}
-func (m *GetBottomKAttributeValuesRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *GetBottomKAttributeValuesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetBottomKAttributeValuesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetBottomKAttributeValuesRequest proto.InternalMessageInfo
-
-func (m *GetBottomKAttributeValuesRequest) GetWorkspaceId() string {
-	if m != nil {
-		return m.WorkspaceId
-	}
-	return ""
-}
-
-func (m *GetBottomKAttributeValuesRequest) GetService() string {
-	if m != nil {
-		return m.Service
-	}
-	return ""
-}
-
-func (m *GetBottomKAttributeValuesRequest) GetOperationName() string {
-	if m != nil {
-		return m.OperationName
-	}
-	return ""
-}
-
-func (m *GetBottomKAttributeValuesRequest) GetAttributeName() string {
-	if m != nil {
-		return m.AttributeName
-	}
-	return ""
-}
-
-func (m *GetBottomKAttributeValuesRequest) GetK() int32 {
-	if m != nil {
-		return m.K
-	}
-	return 0
-}
-
 // Operation encapsulates information about operation.
 type Operation struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -942,7 +509,7 @@ func (m *Operation) Reset()         { *m = Operation{} }
 func (m *Operation) String() string { return proto.CompactTextString(m) }
 func (*Operation) ProtoMessage()    {}
 func (*Operation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{13}
+	return fileDescriptor_5fcb6756dc1afb8d, []int{6}
 }
 func (m *Operation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -997,7 +564,7 @@ func (m *GetOperationsResponse) Reset()         { *m = GetOperationsResponse{} }
 func (m *GetOperationsResponse) String() string { return proto.CompactTextString(m) }
 func (*GetOperationsResponse) ProtoMessage()    {}
 func (*GetOperationsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{14}
+	return fileDescriptor_5fcb6756dc1afb8d, []int{7}
 }
 func (m *GetOperationsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1033,6 +600,565 @@ func (m *GetOperationsResponse) GetOperations() []*Operation {
 	return nil
 }
 
+type GetDependenciesRequest struct {
+	// Required. The start time for the time range to search dependencies.
+	StartTime time.Time `protobuf:"bytes,1,opt,name=start_time,json=startTime,proto3,stdtime" json:"start_time"`
+	// Required. The end time for the time range to search dependencies.
+	EndTime              time.Time `protobuf:"bytes,2,opt,name=end_time,json=endTime,proto3,stdtime" json:"end_time"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *GetDependenciesRequest) Reset()         { *m = GetDependenciesRequest{} }
+func (m *GetDependenciesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDependenciesRequest) ProtoMessage()    {}
+func (*GetDependenciesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{8}
+}
+func (m *GetDependenciesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetDependenciesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetDependenciesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetDependenciesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDependenciesRequest.Merge(m, src)
+}
+func (m *GetDependenciesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetDependenciesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDependenciesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDependenciesRequest proto.InternalMessageInfo
+
+func (m *GetDependenciesRequest) GetStartTime() time.Time {
+	if m != nil {
+		return m.StartTime
+	}
+	return time.Time{}
+}
+
+func (m *GetDependenciesRequest) GetEndTime() time.Time {
+	if m != nil {
+		return m.EndTime
+	}
+	return time.Time{}
+}
+
+type DependenciesResponse struct {
+	Dependencies         []*Dependency `protobuf:"bytes,1,rep,name=dependencies,proto3" json:"dependencies,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
+}
+
+func (m *DependenciesResponse) Reset()         { *m = DependenciesResponse{} }
+func (m *DependenciesResponse) String() string { return proto.CompactTextString(m) }
+func (*DependenciesResponse) ProtoMessage()    {}
+func (*DependenciesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{9}
+}
+func (m *DependenciesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DependenciesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DependenciesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *DependenciesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DependenciesResponse.Merge(m, src)
+}
+func (m *DependenciesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *DependenciesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DependenciesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DependenciesResponse proto.InternalMessageInfo
+
+func (m *DependenciesResponse) GetDependencies() []*Dependency {
+	if m != nil {
+		return m.Dependencies
+	}
+	return nil
+}
+
+type Dependency struct {
+	Parent               string   `protobuf:"bytes,1,opt,name=parent,proto3" json:"parent,omitempty"`
+	Child                string   `protobuf:"bytes,2,opt,name=child,proto3" json:"child,omitempty"`
+	CallCount            uint64   `protobuf:"varint,3,opt,name=call_count,json=callCount,proto3" json:"call_count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Dependency) Reset()         { *m = Dependency{} }
+func (m *Dependency) String() string { return proto.CompactTextString(m) }
+func (*Dependency) ProtoMessage()    {}
+func (*Dependency) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{10}
+}
+func (m *Dependency) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Dependency) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Dependency.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Dependency) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Dependency.Merge(m, src)
+}
+func (m *Dependency) XXX_Size() int {
+	return m.Size()
+}
+func (m *Dependency) XXX_DiscardUnknown() {
+	xxx_messageInfo_Dependency.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Dependency proto.InternalMessageInfo
+
+func (m *Dependency) GetParent() string {
+	if m != nil {
+		return m.Parent
+	}
+	return ""
+}
+
+func (m *Dependency) GetChild() string {
+	if m != nil {
+		return m.Child
+	}
+	return ""
+}
+
+func (m *Dependency) GetCallCount() uint64 {
+	if m != nil {
+		return m.CallCount
+	}
+	return 0
+}
+
+// Request object to get indexed attribute names.
+// "Indexed" attributes are the most frequently used attributes in the trace data,
+// which are often used/allowed for querying and filtering.
+type GetIndexedAttributesNamesRequest struct {
+	// Optional. The workspace ID to filter Operations.
+	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	// service_name filters spans generated by a specific service.
+	ServiceName string `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	// Query parameters used to scope the suggestions.
+	Query *TraceQueryParameters `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
+	// Optional. Maximum number of names to return. If unset or <=0, the server chooses a default.
+	Limit                int32    `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetIndexedAttributesNamesRequest) Reset()         { *m = GetIndexedAttributesNamesRequest{} }
+func (m *GetIndexedAttributesNamesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetIndexedAttributesNamesRequest) ProtoMessage()    {}
+func (*GetIndexedAttributesNamesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{11}
+}
+func (m *GetIndexedAttributesNamesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetIndexedAttributesNamesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetIndexedAttributesNamesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetIndexedAttributesNamesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetIndexedAttributesNamesRequest.Merge(m, src)
+}
+func (m *GetIndexedAttributesNamesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetIndexedAttributesNamesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetIndexedAttributesNamesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetIndexedAttributesNamesRequest proto.InternalMessageInfo
+
+func (m *GetIndexedAttributesNamesRequest) GetWorkspaceId() string {
+	if m != nil {
+		return m.WorkspaceId
+	}
+	return ""
+}
+
+func (m *GetIndexedAttributesNamesRequest) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *GetIndexedAttributesNamesRequest) GetQuery() *TraceQueryParameters {
+	if m != nil {
+		return m.Query
+	}
+	return nil
+}
+
+func (m *GetIndexedAttributesNamesRequest) GetLimit() int32 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+// Response object to get attribute names.
+type GetAttributesNamesResponse struct {
+	Names                []string `protobuf:"bytes,1,rep,name=names,proto3" json:"names,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetAttributesNamesResponse) Reset()         { *m = GetAttributesNamesResponse{} }
+func (m *GetAttributesNamesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetAttributesNamesResponse) ProtoMessage()    {}
+func (*GetAttributesNamesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{12}
+}
+func (m *GetAttributesNamesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetAttributesNamesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetAttributesNamesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetAttributesNamesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetAttributesNamesResponse.Merge(m, src)
+}
+func (m *GetAttributesNamesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetAttributesNamesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetAttributesNamesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetAttributesNamesResponse proto.InternalMessageInfo
+
+func (m *GetAttributesNamesResponse) GetNames() []string {
+	if m != nil {
+		return m.Names
+	}
+	return nil
+}
+
+// Request object to get top-K attribute values.
+type GetTopKAttributeValuesRequest struct {
+	// Optional. The workspace ID to filter Operations.
+	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	// service_name filters spans generated by a specific service.
+	ServiceName string `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	// Query parameters used to scope the suggestions.
+	Query *TraceQueryParameters `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
+	// Required. The attribute name to fetch values for.
+	AttributeName string `protobuf:"bytes,4,opt,name=attribute_name,json=attributeName,proto3" json:"attribute_name,omitempty"`
+	// Optional. Number of values to return. If unset or <=0, the server chooses a default.
+	K                    int32    `protobuf:"varint,5,opt,name=k,proto3" json:"k,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetTopKAttributeValuesRequest) Reset()         { *m = GetTopKAttributeValuesRequest{} }
+func (m *GetTopKAttributeValuesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetTopKAttributeValuesRequest) ProtoMessage()    {}
+func (*GetTopKAttributeValuesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{13}
+}
+func (m *GetTopKAttributeValuesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetTopKAttributeValuesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetTopKAttributeValuesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetTopKAttributeValuesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopKAttributeValuesRequest.Merge(m, src)
+}
+func (m *GetTopKAttributeValuesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetTopKAttributeValuesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopKAttributeValuesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopKAttributeValuesRequest proto.InternalMessageInfo
+
+func (m *GetTopKAttributeValuesRequest) GetWorkspaceId() string {
+	if m != nil {
+		return m.WorkspaceId
+	}
+	return ""
+}
+
+func (m *GetTopKAttributeValuesRequest) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *GetTopKAttributeValuesRequest) GetQuery() *TraceQueryParameters {
+	if m != nil {
+		return m.Query
+	}
+	return nil
+}
+
+func (m *GetTopKAttributeValuesRequest) GetAttributeName() string {
+	if m != nil {
+		return m.AttributeName
+	}
+	return ""
+}
+
+func (m *GetTopKAttributeValuesRequest) GetK() int32 {
+	if m != nil {
+		return m.K
+	}
+	return 0
+}
+
+// Response object to get top-K attribute values.
+type GetTopKAttributeValuesResponse struct {
+	Values               []string `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetTopKAttributeValuesResponse) Reset()         { *m = GetTopKAttributeValuesResponse{} }
+func (m *GetTopKAttributeValuesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetTopKAttributeValuesResponse) ProtoMessage()    {}
+func (*GetTopKAttributeValuesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{14}
+}
+func (m *GetTopKAttributeValuesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetTopKAttributeValuesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetTopKAttributeValuesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetTopKAttributeValuesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopKAttributeValuesResponse.Merge(m, src)
+}
+func (m *GetTopKAttributeValuesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetTopKAttributeValuesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopKAttributeValuesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopKAttributeValuesResponse proto.InternalMessageInfo
+
+func (m *GetTopKAttributeValuesResponse) GetValues() []string {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
+// Request object to get bottom-K attribute values.
+type GetBottomKAttributeValuesRequest struct {
+	// Optional. The workspace ID to filter Operations.
+	WorkspaceId string `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	// service_name filters spans generated by a specific service.
+	ServiceName string `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	// Query parameters used to scope the suggestions.
+	Query *TraceQueryParameters `protobuf:"bytes,3,opt,name=query,proto3" json:"query,omitempty"`
+	// Required. The attribute name to fetch values for.
+	AttributeName string `protobuf:"bytes,4,opt,name=attribute_name,json=attributeName,proto3" json:"attribute_name,omitempty"`
+	// Optional. Number of values to return. If unset or <=0, the server chooses a default.
+	K                    int32    `protobuf:"varint,5,opt,name=k,proto3" json:"k,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetBottomKAttributeValuesRequest) Reset()         { *m = GetBottomKAttributeValuesRequest{} }
+func (m *GetBottomKAttributeValuesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetBottomKAttributeValuesRequest) ProtoMessage()    {}
+func (*GetBottomKAttributeValuesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{15}
+}
+func (m *GetBottomKAttributeValuesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetBottomKAttributeValuesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetBottomKAttributeValuesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetBottomKAttributeValuesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetBottomKAttributeValuesRequest.Merge(m, src)
+}
+func (m *GetBottomKAttributeValuesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetBottomKAttributeValuesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetBottomKAttributeValuesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetBottomKAttributeValuesRequest proto.InternalMessageInfo
+
+func (m *GetBottomKAttributeValuesRequest) GetWorkspaceId() string {
+	if m != nil {
+		return m.WorkspaceId
+	}
+	return ""
+}
+
+func (m *GetBottomKAttributeValuesRequest) GetServiceName() string {
+	if m != nil {
+		return m.ServiceName
+	}
+	return ""
+}
+
+func (m *GetBottomKAttributeValuesRequest) GetQuery() *TraceQueryParameters {
+	if m != nil {
+		return m.Query
+	}
+	return nil
+}
+
+func (m *GetBottomKAttributeValuesRequest) GetAttributeName() string {
+	if m != nil {
+		return m.AttributeName
+	}
+	return ""
+}
+
+func (m *GetBottomKAttributeValuesRequest) GetK() int32 {
+	if m != nil {
+		return m.K
+	}
+	return 0
+}
+
+// Response object to get bottom-K attribute values.
+type GetBottomKAttributeValuesResponse struct {
+	Values               []string `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetBottomKAttributeValuesResponse) Reset()         { *m = GetBottomKAttributeValuesResponse{} }
+func (m *GetBottomKAttributeValuesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetBottomKAttributeValuesResponse) ProtoMessage()    {}
+func (*GetBottomKAttributeValuesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5fcb6756dc1afb8d, []int{16}
+}
+func (m *GetBottomKAttributeValuesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetBottomKAttributeValuesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetBottomKAttributeValuesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetBottomKAttributeValuesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetBottomKAttributeValuesResponse.Merge(m, src)
+}
+func (m *GetBottomKAttributeValuesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetBottomKAttributeValuesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetBottomKAttributeValuesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetBottomKAttributeValuesResponse proto.InternalMessageInfo
+
+func (m *GetBottomKAttributeValuesResponse) GetValues() []string {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
 // GRPCGatewayError is the type returned when GRPC server returns an error.
 // Example: {"error":{"grpcCode":2,"httpCode":500,"message":"...","httpStatus":"text..."}}.
 type GRPCGatewayError struct {
@@ -1046,7 +1172,7 @@ func (m *GRPCGatewayError) Reset()         { *m = GRPCGatewayError{} }
 func (m *GRPCGatewayError) String() string { return proto.CompactTextString(m) }
 func (*GRPCGatewayError) ProtoMessage()    {}
 func (*GRPCGatewayError) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{15}
+	return fileDescriptor_5fcb6756dc1afb8d, []int{17}
 }
 func (m *GRPCGatewayError) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1098,7 +1224,7 @@ func (m *GRPCGatewayError_GRPCGatewayErrorDetails) Reset() {
 func (m *GRPCGatewayError_GRPCGatewayErrorDetails) String() string { return proto.CompactTextString(m) }
 func (*GRPCGatewayError_GRPCGatewayErrorDetails) ProtoMessage()    {}
 func (*GRPCGatewayError_GRPCGatewayErrorDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{15, 0}
+	return fileDescriptor_5fcb6756dc1afb8d, []int{17, 0}
 }
 func (m *GRPCGatewayError_GRPCGatewayErrorDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1177,7 +1303,7 @@ func (m *GRPCGatewayWrapper) Reset()         { *m = GRPCGatewayWrapper{} }
 func (m *GRPCGatewayWrapper) String() string { return proto.CompactTextString(m) }
 func (*GRPCGatewayWrapper) ProtoMessage()    {}
 func (*GRPCGatewayWrapper) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5fcb6756dc1afb8d, []int{16}
+	return fileDescriptor_5fcb6756dc1afb8d, []int{18}
 }
 func (m *GRPCGatewayWrapper) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1221,15 +1347,17 @@ func init() {
 	proto.RegisterType((*GetServicesRequest)(nil), "jaeger.api_v3.GetServicesRequest")
 	proto.RegisterType((*GetServicesResponse)(nil), "jaeger.api_v3.GetServicesResponse")
 	proto.RegisterType((*GetOperationsRequest)(nil), "jaeger.api_v3.GetOperationsRequest")
-	proto.RegisterType((*GetHotAttributeNamesRequest)(nil), "jaeger.api_v3.GetHotAttributeNamesRequest")
-	proto.RegisterType((*GetAttributeNamesResponse)(nil), "jaeger.api_v3.GetAttributeNamesResponse")
-	proto.RegisterType((*GetTopKAttributeValuesRequest)(nil), "jaeger.api_v3.GetTopKAttributeValuesRequest")
-	proto.RegisterType((*AttributeValueCount)(nil), "jaeger.api_v3.AttributeValueCount")
-	proto.RegisterType((*GetTopKAttributeValuesResponse)(nil), "jaeger.api_v3.GetTopKAttributeValuesResponse")
-	proto.RegisterType((*GetBottomKAttributeValuesResponse)(nil), "jaeger.api_v3.GetBottomKAttributeValuesResponse")
-	proto.RegisterType((*GetBottomKAttributeValuesRequest)(nil), "jaeger.api_v3.GetBottomKAttributeValuesRequest")
 	proto.RegisterType((*Operation)(nil), "jaeger.api_v3.Operation")
 	proto.RegisterType((*GetOperationsResponse)(nil), "jaeger.api_v3.GetOperationsResponse")
+	proto.RegisterType((*GetDependenciesRequest)(nil), "jaeger.api_v3.GetDependenciesRequest")
+	proto.RegisterType((*DependenciesResponse)(nil), "jaeger.api_v3.DependenciesResponse")
+	proto.RegisterType((*Dependency)(nil), "jaeger.api_v3.Dependency")
+	proto.RegisterType((*GetIndexedAttributesNamesRequest)(nil), "jaeger.api_v3.GetIndexedAttributesNamesRequest")
+	proto.RegisterType((*GetAttributesNamesResponse)(nil), "jaeger.api_v3.GetAttributesNamesResponse")
+	proto.RegisterType((*GetTopKAttributeValuesRequest)(nil), "jaeger.api_v3.GetTopKAttributeValuesRequest")
+	proto.RegisterType((*GetTopKAttributeValuesResponse)(nil), "jaeger.api_v3.GetTopKAttributeValuesResponse")
+	proto.RegisterType((*GetBottomKAttributeValuesRequest)(nil), "jaeger.api_v3.GetBottomKAttributeValuesRequest")
+	proto.RegisterType((*GetBottomKAttributeValuesResponse)(nil), "jaeger.api_v3.GetBottomKAttributeValuesResponse")
 	proto.RegisterType((*GRPCGatewayError)(nil), "jaeger.api_v3.GRPCGatewayError")
 	proto.RegisterType((*GRPCGatewayError_GRPCGatewayErrorDetails)(nil), "jaeger.api_v3.GRPCGatewayError.GRPCGatewayErrorDetails")
 	proto.RegisterType((*GRPCGatewayWrapper)(nil), "jaeger.api_v3.GRPCGatewayWrapper")
@@ -1238,78 +1366,92 @@ func init() {
 func init() { proto.RegisterFile("query_service.proto", fileDescriptor_5fcb6756dc1afb8d) }
 
 var fileDescriptor_5fcb6756dc1afb8d = []byte{
-	// 1121 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcf, 0x6f, 0x1b, 0xc5,
-	0x17, 0xcf, 0xc4, 0xd9, 0xc4, 0x7e, 0x4e, 0xda, 0x7e, 0x27, 0xf9, 0x52, 0x67, 0xab, 0x3a, 0xce,
-	0x16, 0x24, 0x0b, 0xd1, 0x75, 0x93, 0x1c, 0x5a, 0x2a, 0x10, 0x34, 0x49, 0x6b, 0x4a, 0xd5, 0xd2,
-	0x6e, 0xaa, 0x80, 0x50, 0xa4, 0xd5, 0x24, 0x3b, 0x38, 0x4b, 0xec, 0xdd, 0xed, 0xec, 0xd8, 0x8e,
-	0x6f, 0x70, 0xe6, 0xc2, 0x91, 0x3f, 0x05, 0x89, 0x7f, 0xa0, 0x47, 0xfe, 0x02, 0x40, 0x39, 0x71,
-	0xe3, 0xc2, 0x1f, 0x80, 0xe6, 0xc7, 0x6e, 0xec, 0x5d, 0xc7, 0x38, 0x95, 0x40, 0x9c, 0x76, 0xe6,
-	0xcd, 0xe7, 0x7d, 0xe6, 0xfd, 0x9a, 0xf7, 0x16, 0x96, 0x5f, 0x75, 0x29, 0x1b, 0xb8, 0x31, 0x65,
-	0x3d, 0xff, 0x88, 0xda, 0x11, 0x0b, 0x79, 0x88, 0x97, 0xbe, 0x26, 0xb4, 0x45, 0x99, 0x4d, 0x22,
-	0xdf, 0xed, 0x6d, 0x99, 0xd5, 0x56, 0x18, 0xb6, 0xda, 0xb4, 0x21, 0x0f, 0x0f, 0xbb, 0x5f, 0x35,
-	0xbc, 0x2e, 0x23, 0xdc, 0x0f, 0x03, 0x05, 0x37, 0x57, 0x5a, 0x61, 0x2b, 0x94, 0xcb, 0x86, 0x58,
-	0x69, 0xe9, 0x5a, 0x56, 0x8b, 0xfb, 0x1d, 0x1a, 0x73, 0xd2, 0x89, 0x34, 0xa0, 0x1e, 0x46, 0x34,
-	0xe0, 0xb4, 0x4d, 0x3b, 0x94, 0xb3, 0x81, 0xc2, 0x35, 0x38, 0x23, 0x47, 0xb4, 0xd1, 0xdb, 0x50,
-	0x0b, 0x85, 0xb4, 0xfe, 0x44, 0x70, 0xb5, 0x49, 0xf9, 0x4b, 0x21, 0x72, 0xe8, 0xab, 0x2e, 0x8d,
-	0x39, 0x5e, 0x85, 0xa2, 0x84, 0xb8, 0xbe, 0x57, 0x41, 0x35, 0x54, 0x2f, 0x39, 0x0b, 0x72, 0xff,
-	0xd8, 0xc3, 0x3b, 0x00, 0x31, 0x27, 0x8c, 0xbb, 0xe2, 0xc6, 0xca, 0x6c, 0x0d, 0xd5, 0xcb, 0x9b,
-	0xa6, 0xad, 0xcc, 0xb1, 0x13, 0x73, 0xec, 0x97, 0x89, 0x39, 0xdb, 0xc5, 0xd7, 0xbf, 0xac, 0xcd,
-	0x7c, 0xff, 0xeb, 0x1a, 0x72, 0x4a, 0x52, 0x4f, 0x9c, 0xe0, 0x8f, 0xa0, 0x48, 0x03, 0x4f, 0x51,
-	0x14, 0x2e, 0x41, 0xb1, 0x40, 0x03, 0x4f, 0x12, 0xdc, 0x04, 0x60, 0xa4, 0xef, 0x4a, 0xa3, 0xe2,
-	0xca, 0x5c, 0x0d, 0xd5, 0x8b, 0x4e, 0x89, 0x91, 0xbe, 0xf4, 0x22, 0xc6, 0xeb, 0xb0, 0xd8, 0x0f,
-	0xd9, 0x49, 0x1c, 0x69, 0x1f, 0x0c, 0xe9, 0x43, 0x39, 0x95, 0x3d, 0xf6, 0xac, 0x6f, 0x0d, 0x58,
-	0x91, 0xe8, 0x17, 0x22, 0x47, 0xcf, 0x09, 0x23, 0x1d, 0xca, 0x29, 0x93, 0xba, 0x3a, 0x61, 0x6e,
-	0x40, 0x3a, 0x54, 0xfb, 0x5f, 0xd6, 0xb2, 0x67, 0xa4, 0x43, 0xf1, 0x3b, 0x70, 0x25, 0x8c, 0xa8,
-	0x4a, 0x93, 0x02, 0xcd, 0x4a, 0xd0, 0x52, 0x2a, 0x95, 0xb0, 0x3d, 0x00, 0xc2, 0x39, 0xf3, 0x0f,
-	0xbb, 0x9c, 0xc6, 0x95, 0x42, 0xad, 0x50, 0x2f, 0x6f, 0x6e, 0xd9, 0x23, 0xe9, 0xb7, 0xc7, 0x99,
-	0x60, 0x3f, 0x48, 0xb5, 0x1e, 0x06, 0x9c, 0x0d, 0x9c, 0x21, 0x1a, 0xfc, 0x29, 0x5c, 0x39, 0x8f,
-	0xbf, 0xdb, 0xf1, 0x03, 0xe9, 0xfd, 0xb4, 0x01, 0x5c, 0x4c, 0x73, 0xf0, 0xd4, 0x0f, 0xb2, 0x5c,
-	0xe4, 0x54, 0x06, 0xea, 0x0d, 0xb8, 0xc8, 0x29, 0x7e, 0x04, 0x8b, 0x49, 0xe5, 0x4a, 0xab, 0xe6,
-	0x25, 0xd3, 0x6a, 0x8e, 0x69, 0x57, 0x83, 0x14, 0xd1, 0x0f, 0x82, 0xa8, 0x9c, 0x28, 0x0a, 0x9b,
-	0x46, 0x78, 0xc8, 0x69, 0x65, 0xe1, 0x4d, 0x78, 0xc8, 0xa9, 0x4a, 0x23, 0x61, 0x47, 0xc7, 0xae,
-	0x47, 0x23, 0x7e, 0x5c, 0x29, 0xd6, 0x50, 0xdd, 0x10, 0x69, 0x14, 0xb2, 0x5d, 0x21, 0xca, 0x14,
-	0x51, 0xe9, 0xef, 0x8a, 0x08, 0x72, 0x45, 0x64, 0x7e, 0x08, 0x57, 0x33, 0xb9, 0xc2, 0xd7, 0xa0,
-	0x70, 0x42, 0x07, 0xba, 0x6a, 0xc4, 0x12, 0xaf, 0x80, 0xd1, 0x23, 0xed, 0x6e, 0x52, 0x24, 0x6a,
-	0x73, 0x7f, 0xf6, 0x1e, 0xb2, 0x9e, 0xc1, 0xff, 0x1e, 0xf9, 0x81, 0xa7, 0xee, 0x4b, 0xde, 0xde,
-	0xfb, 0x60, 0xc8, 0xb6, 0x21, 0x29, 0xca, 0x9b, 0xb7, 0xa6, 0x28, 0x18, 0x47, 0x69, 0x58, 0x77,
-	0x01, 0x37, 0x29, 0xdf, 0x53, 0x95, 0x9a, 0x12, 0x66, 0xfd, 0x40, 0xf9, 0xc7, 0xb0, 0x01, 0xcb,
-	0x23, 0x8a, 0x71, 0x14, 0x06, 0x31, 0xc5, 0x26, 0x14, 0x75, 0xd9, 0xc7, 0x15, 0x54, 0x2b, 0xd4,
-	0x4b, 0x4e, 0xba, 0xb7, 0x22, 0x58, 0x69, 0x52, 0xfe, 0x59, 0x52, 0xf0, 0xe9, 0x6d, 0x15, 0x58,
-	0xd0, 0x98, 0xa4, 0x73, 0xe8, 0x2d, 0xbe, 0x01, 0xa5, 0x38, 0x22, 0x81, 0x7b, 0xe2, 0x07, 0x9e,
-	0x8e, 0x45, 0x51, 0x08, 0x9e, 0xf8, 0x81, 0x97, 0x33, 0xb2, 0x30, 0xe6, 0xc5, 0x22, 0xb8, 0xd1,
-	0xa4, 0xfc, 0x93, 0x90, 0xa7, 0x31, 0x17, 0xcf, 0xec, 0x12, 0x7e, 0x0e, 0x1b, 0x37, 0x3b, 0x6a,
-	0x5c, 0xfe, 0x49, 0x17, 0xc6, 0x3c, 0x69, 0x6b, 0x03, 0x56, 0x9b, 0x34, 0x77, 0xbf, 0x0e, 0xd7,
-	0x0a, 0x18, 0x42, 0x33, 0x89, 0x95, 0xda, 0x58, 0x3f, 0x22, 0xb8, 0x29, 0xfa, 0x6b, 0x18, 0x3d,
-	0x49, 0xf5, 0xf6, 0x45, 0x09, 0xfc, 0x9b, 0x86, 0x0b, 0x58, 0xda, 0x44, 0x14, 0x6c, 0x4e, 0xc1,
-	0xc8, 0xb0, 0x2f, 0x78, 0x11, 0xd0, 0x89, 0x6c, 0x02, 0x86, 0x83, 0x4e, 0xac, 0x07, 0xb0, 0x3c,
-	0x6a, 0xf2, 0x4e, 0xd8, 0x0d, 0xf8, 0x79, 0x41, 0xa3, 0xa1, 0x82, 0x16, 0xd2, 0x23, 0x71, 0x2c,
-	0x0d, 0x2c, 0x38, 0x6a, 0x63, 0x1d, 0x40, 0xf5, 0x22, 0xe7, 0x75, 0xd4, 0xee, 0xc3, 0xbc, 0x24,
-	0x50, 0x61, 0x2b, 0x6f, 0x5a, 0x99, 0x82, 0x1f, 0x63, 0x81, 0xa3, 0x35, 0x2c, 0x17, 0xd6, 0x9b,
-	0x94, 0x6f, 0x87, 0x9c, 0x87, 0x9d, 0x7f, 0xe4, 0x82, 0x9f, 0x10, 0xd4, 0x26, 0xdc, 0xf0, 0x1f,
-	0xcf, 0xdf, 0x07, 0x50, 0x4a, 0x1f, 0x28, 0xc6, 0x30, 0x37, 0x34, 0xcf, 0xe4, 0x7a, 0xe2, 0x93,
-	0xb4, 0x5e, 0xc0, 0xff, 0x33, 0x2f, 0x5c, 0x07, 0xf4, 0x1e, 0x40, 0x6a, 0x5c, 0x12, 0xd4, 0x4a,
-	0x26, 0xa8, 0xa9, 0x9a, 0x33, 0x84, 0xb5, 0xfe, 0x40, 0x70, 0xad, 0xe9, 0x3c, 0xdf, 0x69, 0x12,
-	0x4e, 0xfb, 0x64, 0xf0, 0x90, 0xb1, 0x90, 0xe1, 0xa7, 0x60, 0x50, 0xb1, 0xd0, 0x0d, 0xef, 0x6e,
-	0x86, 0x29, 0x8b, 0xcf, 0x09, 0x76, 0x29, 0x27, 0x7e, 0x3b, 0x76, 0x14, 0x8b, 0xf9, 0x1d, 0x82,
-	0xeb, 0x17, 0x40, 0x44, 0x43, 0x6b, 0xb1, 0xe8, 0x68, 0x27, 0xf4, 0x54, 0x1c, 0x0c, 0x27, 0xdd,
-	0x8b, 0xb3, 0x63, 0xce, 0x23, 0x79, 0x36, 0xab, 0xce, 0x92, 0xbd, 0x48, 0x5f, 0x87, 0xc6, 0x31,
-	0x69, 0x25, 0xd9, 0x49, 0xb6, 0xb8, 0x0a, 0x20, 0x50, 0x7b, 0x9c, 0xf0, 0x6e, 0xac, 0x73, 0x32,
-	0x24, 0xb1, 0xf6, 0x01, 0x0f, 0x19, 0xf3, 0x39, 0x23, 0x51, 0x44, 0x19, 0xfe, 0x18, 0xe6, 0x19,
-	0x8d, 0xbb, 0x6d, 0xae, 0x7d, 0xae, 0xdb, 0x23, 0xbf, 0x6b, 0x6a, 0xca, 0xd9, 0xea, 0x2f, 0xad,
-	0xb7, 0xa1, 0x7a, 0x7e, 0xbc, 0x4b, 0x38, 0x71, 0xb4, 0xde, 0xe6, 0xef, 0x06, 0x2c, 0xca, 0x29,
-	0xa0, 0x9b, 0x36, 0xfe, 0x02, 0x8a, 0xc9, 0x5f, 0x1c, 0xae, 0x66, 0x43, 0x38, 0xfa, 0x7b, 0x67,
-	0x4e, 0x7d, 0x9d, 0x35, 0x73, 0x07, 0xe1, 0x03, 0x80, 0xf3, 0x29, 0x85, 0x6b, 0x19, 0xee, 0xdc,
-	0x00, 0xbb, 0x24, 0xfb, 0x3e, 0x94, 0x87, 0x46, 0x0f, 0x5e, 0xcf, 0x9b, 0x9e, 0x99, 0x67, 0xa6,
-	0x35, 0x09, 0xa2, 0x4a, 0xd4, 0x9a, 0xc1, 0x07, 0xb0, 0x34, 0x52, 0xbd, 0xf8, 0x56, 0x5e, 0x2d,
-	0x37, 0xbd, 0xcc, 0xb7, 0x27, 0x83, 0x52, 0xf6, 0x40, 0x4e, 0xbf, 0xdc, 0x28, 0xc2, 0xef, 0xe6,
-	0xf5, 0x2f, 0x9a, 0x57, 0x66, 0x3d, 0x8f, 0x1d, 0x3f, 0x58, 0xac, 0x19, 0xdc, 0x87, 0xb7, 0xc6,
-	0xb7, 0x51, 0xfc, 0xde, 0x98, 0x5c, 0x5f, 0x38, 0x6a, 0xcc, 0xdb, 0x53, 0xa2, 0xd3, 0x8b, 0xbf,
-	0x41, 0x72, 0xe2, 0x8d, 0x6f, 0x80, 0xb8, 0x91, 0xa7, 0x9b, 0xd8, 0x2a, 0xcd, 0x3b, 0xd3, 0x2b,
-	0x24, 0x26, 0x6c, 0xdf, 0x7e, 0x7d, 0x56, 0x45, 0x3f, 0x9f, 0x55, 0xd1, 0x6f, 0x67, 0x55, 0x04,
-	0xd7, 0xfd, 0x50, 0x73, 0x88, 0x8a, 0xf2, 0x83, 0x96, 0xa6, 0xfa, 0x72, 0x5e, 0x7d, 0x0f, 0xe7,
-	0x65, 0xbd, 0x6d, 0xfd, 0x15, 0x00, 0x00, 0xff, 0xff, 0x8a, 0x1d, 0x89, 0xee, 0x7d, 0x0d, 0x00,
-	0x00,
+	// 1360 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x57, 0xcf, 0x6f, 0x1b, 0xc5,
+	0x17, 0xff, 0x8e, 0x1d, 0x27, 0xf6, 0x73, 0x9a, 0xf6, 0x3b, 0x35, 0xa9, 0xb3, 0x6d, 0x5d, 0x67,
+	0x43, 0x90, 0x0b, 0xd4, 0x6e, 0x93, 0x43, 0x4b, 0xa1, 0x02, 0x9a, 0xb4, 0x56, 0xa9, 0x5a, 0xda,
+	0x6d, 0x29, 0xa2, 0x17, 0x6b, 0xe2, 0x1d, 0x9c, 0xc5, 0xf6, 0xee, 0x76, 0x76, 0xec, 0xc4, 0xaa,
+	0x38, 0xc0, 0x85, 0x03, 0x17, 0x24, 0x2e, 0x5c, 0x40, 0xe2, 0xc8, 0x9f, 0xc0, 0x7f, 0xd0, 0x23,
+	0x12, 0x42, 0xe2, 0x04, 0xa8, 0xe2, 0xc0, 0x8d, 0x0b, 0x7f, 0x00, 0x9a, 0x1f, 0xbb, 0xb6, 0x77,
+	0x6d, 0x37, 0x29, 0x17, 0xc4, 0xc9, 0xfb, 0xde, 0xbc, 0x1f, 0x9f, 0xf7, 0xe6, 0xcd, 0x7b, 0xcf,
+	0x70, 0xfc, 0x51, 0x8f, 0xb2, 0x41, 0x23, 0xa0, 0xac, 0xef, 0x34, 0x69, 0xd5, 0x67, 0x1e, 0xf7,
+	0xf0, 0x91, 0x8f, 0x08, 0x6d, 0x51, 0x56, 0x25, 0xbe, 0xd3, 0xe8, 0x6f, 0x1a, 0xa7, 0x5a, 0x9e,
+	0xd7, 0xea, 0xd0, 0x1a, 0xf1, 0x9d, 0x1a, 0x71, 0x5d, 0x8f, 0x13, 0xee, 0x78, 0x6e, 0xa0, 0x84,
+	0x8d, 0x92, 0x3e, 0x95, 0xd4, 0x4e, 0xef, 0xc3, 0x9a, 0xdd, 0x63, 0x52, 0x40, 0x9f, 0x17, 0x5a,
+	0x5e, 0xcb, 0x93, 0x9f, 0x35, 0xf1, 0xa5, 0xb9, 0x67, 0xe2, 0x5a, 0xdc, 0xe9, 0xd2, 0x80, 0x93,
+	0xae, 0xaf, 0x05, 0x2a, 0x9e, 0x4f, 0x5d, 0x4e, 0x3b, 0xb4, 0x4b, 0x39, 0x1b, 0x28, 0xb9, 0x1a,
+	0x67, 0xa4, 0x49, 0x6b, 0xfd, 0x0b, 0xea, 0x43, 0x49, 0x9a, 0x7f, 0x21, 0x38, 0x5a, 0xa7, 0xfc,
+	0xbe, 0x60, 0x59, 0xf4, 0x51, 0x8f, 0x06, 0x1c, 0xaf, 0x40, 0x56, 0x8a, 0x34, 0x1c, 0xbb, 0x88,
+	0xca, 0xa8, 0x92, 0xb3, 0x16, 0x24, 0x7d, 0xc3, 0xc6, 0x5b, 0x00, 0x01, 0x27, 0x8c, 0x37, 0x84,
+	0xc7, 0x62, 0xaa, 0x8c, 0x2a, 0xf9, 0x0d, 0xa3, 0xaa, 0xe0, 0x54, 0x43, 0x38, 0xd5, 0xfb, 0x21,
+	0x9c, 0xab, 0xd9, 0x27, 0xbf, 0x9c, 0xf9, 0xdf, 0x17, 0xbf, 0x9e, 0x41, 0x56, 0x4e, 0xea, 0x89,
+	0x13, 0xfc, 0x26, 0x64, 0xa9, 0x6b, 0x2b, 0x13, 0xe9, 0x43, 0x98, 0x58, 0xa0, 0xae, 0x2d, 0x0d,
+	0x9c, 0x06, 0x60, 0x64, 0xaf, 0x21, 0x41, 0x05, 0xc5, 0xb9, 0x32, 0xaa, 0x64, 0xad, 0x1c, 0x23,
+	0x7b, 0x32, 0x8a, 0x00, 0xaf, 0xc2, 0xe2, 0x9e, 0xc7, 0xda, 0x81, 0xaf, 0x63, 0xc8, 0xc8, 0x18,
+	0xf2, 0x11, 0xef, 0x86, 0x6d, 0x7e, 0x92, 0x81, 0x82, 0x94, 0xbe, 0x2b, 0x6e, 0xf0, 0x0e, 0x61,
+	0xa4, 0x4b, 0x39, 0x65, 0x52, 0x57, 0x5f, 0x67, 0xc3, 0x25, 0x5d, 0xaa, 0xe3, 0xcf, 0x6b, 0xde,
+	0x6d, 0xd2, 0xa5, 0x78, 0x1d, 0x96, 0x3c, 0x9f, 0xaa, 0x6b, 0x52, 0x42, 0x29, 0x29, 0x74, 0x24,
+	0xe2, 0x4a, 0xb1, 0x7b, 0x00, 0x84, 0x73, 0xe6, 0xec, 0xf4, 0x38, 0x0d, 0x8a, 0xe9, 0x72, 0xba,
+	0x92, 0xdf, 0xd8, 0xac, 0x8e, 0x15, 0x47, 0x75, 0x12, 0x84, 0xea, 0xdb, 0x91, 0xd6, 0x35, 0x97,
+	0xb3, 0x81, 0x35, 0x62, 0x06, 0xbf, 0x03, 0x4b, 0xc3, 0xfc, 0x37, 0xba, 0x8e, 0x2b, 0xa3, 0x3f,
+	0x68, 0x02, 0x17, 0xa3, 0x3b, 0xb8, 0xe5, 0xb8, 0x71, 0x5b, 0x64, 0x5f, 0x26, 0xea, 0x39, 0x6c,
+	0x91, 0x7d, 0x7c, 0x1d, 0x16, 0xc3, 0xca, 0x95, 0xa8, 0xe6, 0xa5, 0xa5, 0x95, 0x84, 0xa5, 0x6d,
+	0x2d, 0xa4, 0x0c, 0x7d, 0x25, 0x0c, 0xe5, 0x43, 0x45, 0x81, 0x69, 0xcc, 0x0e, 0xd9, 0x2f, 0x2e,
+	0x3c, 0x8f, 0x1d, 0xb2, 0xaf, 0xae, 0x91, 0xb0, 0xe6, 0x6e, 0xc3, 0xa6, 0x3e, 0xdf, 0x2d, 0x66,
+	0xcb, 0xa8, 0x92, 0x11, 0xd7, 0x28, 0x78, 0xdb, 0x82, 0x15, 0x2b, 0xa2, 0xdc, 0xb3, 0x8a, 0x08,
+	0x12, 0x45, 0x64, 0x5c, 0x81, 0xa3, 0xb1, 0xbb, 0xc2, 0xc7, 0x20, 0xdd, 0xa6, 0x03, 0x5d, 0x35,
+	0xe2, 0x13, 0x17, 0x20, 0xd3, 0x27, 0x9d, 0x5e, 0x58, 0x24, 0x8a, 0xb8, 0x9c, 0xba, 0x84, 0xcc,
+	0xdb, 0xf0, 0xff, 0xeb, 0x8e, 0x6b, 0x2b, 0x7f, 0xe1, 0xdb, 0x7b, 0x0d, 0x32, 0xb2, 0xa9, 0x48,
+	0x13, 0xf9, 0x8d, 0xb5, 0x03, 0x14, 0x8c, 0xa5, 0x34, 0xcc, 0x8b, 0x80, 0xeb, 0x94, 0xdf, 0x53,
+	0x95, 0x1a, 0x19, 0x8c, 0xc7, 0x81, 0x92, 0x8f, 0xe1, 0x02, 0x1c, 0x1f, 0x53, 0x0c, 0x7c, 0xcf,
+	0x0d, 0x28, 0x36, 0x20, 0xab, 0xcb, 0x3e, 0x28, 0xa2, 0x72, 0xba, 0x92, 0xb3, 0x22, 0xda, 0xf4,
+	0xa1, 0x50, 0xa7, 0xfc, 0xdd, 0xb0, 0xe0, 0x23, 0x6f, 0x45, 0x58, 0xd0, 0x32, 0x61, 0xe7, 0xd0,
+	0x24, 0x3e, 0x09, 0xb9, 0xc0, 0x27, 0x6e, 0xa3, 0xed, 0xb8, 0xb6, 0xce, 0x45, 0x56, 0x30, 0x6e,
+	0x3a, 0xae, 0x9d, 0x00, 0x99, 0x4e, 0x82, 0x7c, 0x03, 0x72, 0x91, 0x3b, 0x8c, 0x61, 0x6e, 0xe4,
+	0x75, 0xca, 0xef, 0x99, 0x0e, 0xcc, 0xbb, 0xf0, 0x42, 0x0c, 0xaf, 0x0e, 0xf2, 0x12, 0x40, 0xf4,
+	0x6c, 0x55, 0x98, 0xf9, 0x8d, 0x62, 0x2c, 0xe9, 0x91, 0x9a, 0x35, 0x22, 0x6b, 0x7e, 0x83, 0x60,
+	0xb9, 0x4e, 0xf9, 0x36, 0xf5, 0xa9, 0x6b, 0x53, 0xb7, 0xe9, 0x0c, 0x73, 0x3e, 0xde, 0x25, 0xd1,
+	0x3f, 0xef, 0x92, 0xa9, 0xe7, 0xe8, 0x92, 0xe6, 0x7b, 0x50, 0x18, 0x07, 0xa7, 0x43, 0xbe, 0x02,
+	0x8b, 0xf6, 0x08, 0x5f, 0x07, 0xbd, 0x12, 0x0b, 0x3a, 0x52, 0x1d, 0x58, 0x63, 0xe2, 0xe6, 0x07,
+	0x00, 0xc3, 0x33, 0xbc, 0x0c, 0xf3, 0x3e, 0x61, 0xd4, 0xe5, 0xfa, 0x2e, 0x34, 0x25, 0xca, 0xbe,
+	0xb9, 0xeb, 0x74, 0xc2, 0x9b, 0x50, 0x84, 0x78, 0x73, 0x4d, 0xd2, 0xe9, 0x34, 0x9a, 0x5e, 0xcf,
+	0xe5, 0xf2, 0x96, 0xe7, 0xac, 0x9c, 0xe0, 0x6c, 0x09, 0x86, 0xf9, 0x3d, 0x82, 0x72, 0x9d, 0xf2,
+	0x1b, 0xae, 0x4d, 0xf7, 0xa9, 0x3d, 0x7c, 0x5b, 0xa2, 0x9f, 0x1e, 0xa2, 0xa0, 0x13, 0x4d, 0x3c,
+	0x95, 0x6c, 0xe2, 0xd1, 0x3b, 0x4b, 0x1f, 0xf6, 0x9d, 0x89, 0xd0, 0x3a, 0x4e, 0xd7, 0xe1, 0xb2,
+	0xf5, 0x66, 0x2c, 0x45, 0x98, 0x1b, 0x60, 0xd4, 0x29, 0x4f, 0x60, 0xd6, 0x39, 0x2f, 0x40, 0x46,
+	0x20, 0x09, 0x1f, 0x92, 0x22, 0xcc, 0x9f, 0x10, 0x9c, 0x16, 0xc3, 0xd7, 0xf3, 0x6f, 0x46, 0x8a,
+	0x0f, 0x44, 0x7f, 0xf8, 0xf7, 0x04, 0xbb, 0x0e, 0x4b, 0xd1, 0xf8, 0x51, 0xf6, 0xe7, 0xd4, 0xb0,
+	0x8b, 0xb8, 0xd2, 0xc3, 0x22, 0xa0, 0xb6, 0x1c, 0x1f, 0x19, 0x0b, 0xb5, 0xcd, 0x4b, 0x50, 0x9a,
+	0x16, 0x96, 0xce, 0xc7, 0x32, 0xcc, 0xcb, 0x46, 0x18, 0x26, 0x44, 0x53, 0xe6, 0xcf, 0xaa, 0x02,
+	0xae, 0x7a, 0x9c, 0x7b, 0xdd, 0xff, 0x56, 0x52, 0x5e, 0x87, 0xd5, 0x19, 0x91, 0x3d, 0x23, 0x2f,
+	0x7f, 0x22, 0x38, 0x56, 0xb7, 0xee, 0x6c, 0xd5, 0x09, 0xa7, 0x7b, 0x64, 0x70, 0x8d, 0x31, 0x8f,
+	0xe1, 0x5b, 0x90, 0xa1, 0xe2, 0x43, 0x77, 0x98, 0x8b, 0xb1, 0x08, 0xe2, 0xf2, 0x09, 0xc6, 0x36,
+	0xe5, 0xc4, 0xe9, 0x04, 0x96, 0xb2, 0x62, 0x7c, 0x8e, 0xe0, 0xc4, 0x14, 0x11, 0x31, 0x0b, 0x5a,
+	0xcc, 0x6f, 0x6e, 0x79, 0xb6, 0xea, 0x67, 0x19, 0x2b, 0xa2, 0xc5, 0xd9, 0x2e, 0xe7, 0xbe, 0x3c,
+	0x4b, 0xa9, 0xb3, 0x90, 0x16, 0xf3, 0xa0, 0x4b, 0x83, 0x80, 0xb4, 0xa8, 0xee, 0xe9, 0x21, 0x89,
+	0x4b, 0x00, 0x42, 0xea, 0x1e, 0x27, 0xbc, 0x17, 0xe8, 0xfc, 0x8d, 0x70, 0xcc, 0x07, 0x80, 0x47,
+	0xc0, 0xbc, 0xcf, 0x88, 0xef, 0x53, 0x86, 0xdf, 0x82, 0x79, 0x46, 0x83, 0x5e, 0x87, 0xeb, 0x98,
+	0x2b, 0xd5, 0xb1, 0x4d, 0x57, 0x75, 0xc6, 0xaa, 0x5a, 0x70, 0xfb, 0x17, 0xd4, 0x25, 0x06, 0xdb,
+	0x84, 0x13, 0x4b, 0xeb, 0x6d, 0xfc, 0x91, 0x85, 0x45, 0x79, 0xad, 0x7a, 0xde, 0xe1, 0x01, 0x64,
+	0xc3, 0x05, 0x18, 0x97, 0xe2, 0x29, 0x1c, 0xdf, 0x8c, 0x8d, 0x03, 0xbb, 0x33, 0x57, 0x3f, 0xfd,
+	0xf1, 0xf7, 0x2f, 0x53, 0x27, 0xf1, 0x8a, 0x5c, 0xfc, 0xfb, 0x9b, 0x6a, 0xe9, 0x0e, 0x6a, 0x8f,
+	0xc3, 0xcd, 0xfa, 0xe3, 0xf3, 0x08, 0x7f, 0x86, 0x00, 0x86, 0x2b, 0x00, 0x2e, 0xc7, 0xbc, 0x27,
+	0xb6, 0x83, 0x43, 0xf8, 0x7f, 0x45, 0xfa, 0x5f, 0xc7, 0x4b, 0xe3, 0xfe, 0x1f, 0x1e, 0x37, 0x63,
+	0x9c, 0xcb, 0xe8, 0xe5, 0xf3, 0x08, 0xbb, 0x90, 0x1f, 0x59, 0x01, 0xf0, 0x6a, 0x32, 0x0f, 0xb1,
+	0xbd, 0xc2, 0x30, 0x67, 0x89, 0xa8, 0x6a, 0x36, 0x8b, 0x12, 0x04, 0xc6, 0xc7, 0x42, 0x97, 0xe1,
+	0xfe, 0x80, 0xfb, 0x70, 0x64, 0x6c, 0x1e, 0xe3, 0xb5, 0xa4, 0xb9, 0xc4, 0x76, 0x61, 0xbc, 0x38,
+	0x5b, 0x48, 0x7b, 0x35, 0xa4, 0xd7, 0x02, 0xc6, 0xa1, 0xd7, 0xe1, 0xd0, 0xc6, 0x8f, 0xe5, 0xbf,
+	0x9d, 0xd1, 0xb1, 0x88, 0xd7, 0x93, 0x46, 0x27, 0xcc, 0x74, 0x63, 0x6d, 0xda, 0x7c, 0x1c, 0x19,
+	0xad, 0xe6, 0x29, 0xe9, 0x7a, 0x19, 0x17, 0x42, 0xd7, 0xa3, 0x93, 0x13, 0x7f, 0x8b, 0x60, 0x65,
+	0xea, 0x78, 0xc3, 0xb5, 0x24, 0x8e, 0x99, 0x83, 0xd0, 0x38, 0x9b, 0x54, 0x98, 0x32, 0x7e, 0xcc,
+	0x8a, 0xc4, 0x65, 0xe2, 0x72, 0x88, 0x6b, 0xf8, 0x97, 0xa2, 0xe6, 0x28, 0x27, 0x35, 0x39, 0x92,
+	0xf0, 0xd7, 0x6a, 0xab, 0x99, 0xd0, 0xbb, 0xf1, 0xab, 0x13, 0x1e, 0xc7, 0xd4, 0xc9, 0x65, 0x9c,
+	0x3b, 0xa0, 0xb4, 0x46, 0xf8, 0x92, 0x44, 0x58, 0xc6, 0xa5, 0x09, 0x08, 0x55, 0x0f, 0xac, 0x71,
+	0xcf, 0x6f, 0xe3, 0xef, 0x54, 0x0e, 0x27, 0xb7, 0xd1, 0x49, 0x39, 0x9c, 0x39, 0x4a, 0x8c, 0xf3,
+	0x07, 0x57, 0xd0, 0x40, 0xcf, 0x4a, 0xa0, 0x6b, 0x78, 0x75, 0x3a, 0xd0, 0x1d, 0x69, 0xa1, 0x7d,
+	0xf5, 0xdc, 0x93, 0xa7, 0x25, 0xf4, 0xc3, 0xd3, 0x12, 0xfa, 0xed, 0x69, 0x09, 0xc1, 0x09, 0xc7,
+	0xd3, 0xce, 0xc4, 0xc3, 0x73, 0xdc, 0x96, 0xf6, 0xf9, 0x70, 0x5e, 0xfd, 0xee, 0xcc, 0xcb, 0xd7,
+	0xbc, 0xf9, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0x35, 0x7f, 0x84, 0xac, 0x56, 0x10, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1337,11 +1479,12 @@ type QueryServiceClient interface {
 	GetServices(ctx context.Context, in *GetServicesRequest, opts ...grpc.CallOption) (*GetServicesResponse, error)
 	// GetOperations returns operation names.
 	GetOperations(ctx context.Context, in *GetOperationsRequest, opts ...grpc.CallOption) (*GetOperationsResponse, error)
-	// GetAttributeNames returns attribute names.
-	GetHotAttributeNames(ctx context.Context, in *GetHotAttributeNamesRequest, opts ...grpc.CallOption) (*GetAttributeNamesResponse, error)
-	// GetTopKAttributeValues returns top-k attribute values.
+	GetDependencies(ctx context.Context, in *GetDependenciesRequest, opts ...grpc.CallOption) (*DependenciesResponse, error)
+	// GetIndexedAttributesNames returns a list of indexed attribute names available for querying.
+	GetIndexedAttributesNames(ctx context.Context, in *GetIndexedAttributesNamesRequest, opts ...grpc.CallOption) (*GetAttributesNamesResponse, error)
+	// GetTopKAttributeValues returns the most frequently observed values for an attribute.
 	GetTopKAttributeValues(ctx context.Context, in *GetTopKAttributeValuesRequest, opts ...grpc.CallOption) (*GetTopKAttributeValuesResponse, error)
-	// GetBottomKAttributeValues returns bottom-k attribute values.
+	// GetBottomKAttributeValues returns the least frequently observed values for an attribute.
 	GetBottomKAttributeValues(ctx context.Context, in *GetBottomKAttributeValuesRequest, opts ...grpc.CallOption) (*GetBottomKAttributeValuesResponse, error)
 }
 
@@ -1435,9 +1578,18 @@ func (c *queryServiceClient) GetOperations(ctx context.Context, in *GetOperation
 	return out, nil
 }
 
-func (c *queryServiceClient) GetHotAttributeNames(ctx context.Context, in *GetHotAttributeNamesRequest, opts ...grpc.CallOption) (*GetAttributeNamesResponse, error) {
-	out := new(GetAttributeNamesResponse)
-	err := c.cc.Invoke(ctx, "/jaeger.api_v3.QueryService/GetHotAttributeNames", in, out, opts...)
+func (c *queryServiceClient) GetDependencies(ctx context.Context, in *GetDependenciesRequest, opts ...grpc.CallOption) (*DependenciesResponse, error) {
+	out := new(DependenciesResponse)
+	err := c.cc.Invoke(ctx, "/jaeger.api_v3.QueryService/GetDependencies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetIndexedAttributesNames(ctx context.Context, in *GetIndexedAttributesNamesRequest, opts ...grpc.CallOption) (*GetAttributesNamesResponse, error) {
+	out := new(GetAttributesNamesResponse)
+	err := c.cc.Invoke(ctx, "/jaeger.api_v3.QueryService/GetIndexedAttributesNames", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1477,11 +1629,12 @@ type QueryServiceServer interface {
 	GetServices(context.Context, *GetServicesRequest) (*GetServicesResponse, error)
 	// GetOperations returns operation names.
 	GetOperations(context.Context, *GetOperationsRequest) (*GetOperationsResponse, error)
-	// GetAttributeNames returns attribute names.
-	GetHotAttributeNames(context.Context, *GetHotAttributeNamesRequest) (*GetAttributeNamesResponse, error)
-	// GetTopKAttributeValues returns top-k attribute values.
+	GetDependencies(context.Context, *GetDependenciesRequest) (*DependenciesResponse, error)
+	// GetIndexedAttributesNames returns a list of indexed attribute names available for querying.
+	GetIndexedAttributesNames(context.Context, *GetIndexedAttributesNamesRequest) (*GetAttributesNamesResponse, error)
+	// GetTopKAttributeValues returns the most frequently observed values for an attribute.
 	GetTopKAttributeValues(context.Context, *GetTopKAttributeValuesRequest) (*GetTopKAttributeValuesResponse, error)
-	// GetBottomKAttributeValues returns bottom-k attribute values.
+	// GetBottomKAttributeValues returns the least frequently observed values for an attribute.
 	GetBottomKAttributeValues(context.Context, *GetBottomKAttributeValuesRequest) (*GetBottomKAttributeValuesResponse, error)
 }
 
@@ -1501,8 +1654,11 @@ func (*UnimplementedQueryServiceServer) GetServices(ctx context.Context, req *Ge
 func (*UnimplementedQueryServiceServer) GetOperations(ctx context.Context, req *GetOperationsRequest) (*GetOperationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOperations not implemented")
 }
-func (*UnimplementedQueryServiceServer) GetHotAttributeNames(ctx context.Context, req *GetHotAttributeNamesRequest) (*GetAttributeNamesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetHotAttributeNames not implemented")
+func (*UnimplementedQueryServiceServer) GetDependencies(ctx context.Context, req *GetDependenciesRequest) (*DependenciesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDependencies not implemented")
+}
+func (*UnimplementedQueryServiceServer) GetIndexedAttributesNames(ctx context.Context, req *GetIndexedAttributesNamesRequest) (*GetAttributesNamesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIndexedAttributesNames not implemented")
 }
 func (*UnimplementedQueryServiceServer) GetTopKAttributeValues(ctx context.Context, req *GetTopKAttributeValuesRequest) (*GetTopKAttributeValuesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopKAttributeValues not implemented")
@@ -1593,20 +1749,38 @@ func _QueryService_GetOperations_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _QueryService_GetHotAttributeNames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetHotAttributeNamesRequest)
+func _QueryService_GetDependencies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDependenciesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServiceServer).GetHotAttributeNames(ctx, in)
+		return srv.(QueryServiceServer).GetDependencies(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/jaeger.api_v3.QueryService/GetHotAttributeNames",
+		FullMethod: "/jaeger.api_v3.QueryService/GetDependencies",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetHotAttributeNames(ctx, req.(*GetHotAttributeNamesRequest))
+		return srv.(QueryServiceServer).GetDependencies(ctx, req.(*GetDependenciesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetIndexedAttributesNames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIndexedAttributesNamesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetIndexedAttributesNames(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/jaeger.api_v3.QueryService/GetIndexedAttributesNames",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetIndexedAttributesNames(ctx, req.(*GetIndexedAttributesNamesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1660,8 +1834,12 @@ var _QueryService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _QueryService_GetOperations_Handler,
 		},
 		{
-			MethodName: "GetHotAttributeNames",
-			Handler:    _QueryService_GetHotAttributeNames_Handler,
+			MethodName: "GetDependencies",
+			Handler:    _QueryService_GetDependencies_Handler,
+		},
+		{
+			MethodName: "GetIndexedAttributesNames",
+			Handler:    _QueryService_GetIndexedAttributesNames_Handler,
 		},
 		{
 			MethodName: "GetTopKAttributeValues",
@@ -2025,331 +2203,6 @@ func (m *GetOperationsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetHotAttributeNamesRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetHotAttributeNamesRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetHotAttributeNamesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.OperationName) > 0 {
-		i -= len(m.OperationName)
-		copy(dAtA[i:], m.OperationName)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.OperationName)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Service) > 0 {
-		i -= len(m.Service)
-		copy(dAtA[i:], m.Service)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Service)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.WorkspaceId) > 0 {
-		i -= len(m.WorkspaceId)
-		copy(dAtA[i:], m.WorkspaceId)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *GetAttributeNamesResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetAttributeNamesResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetAttributeNamesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.Names) > 0 {
-		for iNdEx := len(m.Names) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Names[iNdEx])
-			copy(dAtA[i:], m.Names[iNdEx])
-			i = encodeVarintQueryService(dAtA, i, uint64(len(m.Names[iNdEx])))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *GetTopKAttributeValuesRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetTopKAttributeValuesRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetTopKAttributeValuesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.K != 0 {
-		i = encodeVarintQueryService(dAtA, i, uint64(m.K))
-		i--
-		dAtA[i] = 0x28
-	}
-	if len(m.AttributeName) > 0 {
-		i -= len(m.AttributeName)
-		copy(dAtA[i:], m.AttributeName)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.AttributeName)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.OperationName) > 0 {
-		i -= len(m.OperationName)
-		copy(dAtA[i:], m.OperationName)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.OperationName)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Service) > 0 {
-		i -= len(m.Service)
-		copy(dAtA[i:], m.Service)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Service)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.WorkspaceId) > 0 {
-		i -= len(m.WorkspaceId)
-		copy(dAtA[i:], m.WorkspaceId)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *AttributeValueCount) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *AttributeValueCount) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *AttributeValueCount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.Count != 0 {
-		i = encodeVarintQueryService(dAtA, i, uint64(m.Count))
-		i--
-		dAtA[i] = 0x10
-	}
-	if len(m.Value) > 0 {
-		i -= len(m.Value)
-		copy(dAtA[i:], m.Value)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Value)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *GetTopKAttributeValuesResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetTopKAttributeValuesResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetTopKAttributeValuesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.Values) > 0 {
-		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQueryService(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *GetBottomKAttributeValuesResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetBottomKAttributeValuesResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetBottomKAttributeValuesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if len(m.Values) > 0 {
-		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQueryService(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *GetBottomKAttributeValuesRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *GetBottomKAttributeValuesRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *GetBottomKAttributeValuesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.XXX_unrecognized != nil {
-		i -= len(m.XXX_unrecognized)
-		copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	if m.K != 0 {
-		i = encodeVarintQueryService(dAtA, i, uint64(m.K))
-		i--
-		dAtA[i] = 0x28
-	}
-	if len(m.AttributeName) > 0 {
-		i -= len(m.AttributeName)
-		copy(dAtA[i:], m.AttributeName)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.AttributeName)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.OperationName) > 0 {
-		i -= len(m.OperationName)
-		copy(dAtA[i:], m.OperationName)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.OperationName)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Service) > 0 {
-		i -= len(m.Service)
-		copy(dAtA[i:], m.Service)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Service)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.WorkspaceId) > 0 {
-		i -= len(m.WorkspaceId)
-		copy(dAtA[i:], m.WorkspaceId)
-		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *Operation) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -2425,6 +2278,432 @@ func (m *GetOperationsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i -= size
 				i = encodeVarintQueryService(dAtA, i, uint64(size))
 			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetDependenciesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetDependenciesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetDependenciesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	n8, err8 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.EndTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.EndTime):])
+	if err8 != nil {
+		return 0, err8
+	}
+	i -= n8
+	i = encodeVarintQueryService(dAtA, i, uint64(n8))
+	i--
+	dAtA[i] = 0x12
+	n9, err9 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.StartTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTime):])
+	if err9 != nil {
+		return 0, err9
+	}
+	i -= n9
+	i = encodeVarintQueryService(dAtA, i, uint64(n9))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *DependenciesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DependenciesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DependenciesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Dependencies) > 0 {
+		for iNdEx := len(m.Dependencies) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Dependencies[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQueryService(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Dependency) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Dependency) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Dependency) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.CallCount != 0 {
+		i = encodeVarintQueryService(dAtA, i, uint64(m.CallCount))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Child) > 0 {
+		i -= len(m.Child)
+		copy(dAtA[i:], m.Child)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Child)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Parent) > 0 {
+		i -= len(m.Parent)
+		copy(dAtA[i:], m.Parent)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.Parent)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetIndexedAttributesNamesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetIndexedAttributesNamesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetIndexedAttributesNamesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Limit != 0 {
+		i = encodeVarintQueryService(dAtA, i, uint64(m.Limit))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.Query != nil {
+		{
+			size, err := m.Query.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQueryService(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ServiceName) > 0 {
+		i -= len(m.ServiceName)
+		copy(dAtA[i:], m.ServiceName)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.ServiceName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.WorkspaceId) > 0 {
+		i -= len(m.WorkspaceId)
+		copy(dAtA[i:], m.WorkspaceId)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetAttributesNamesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetAttributesNamesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetAttributesNamesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Names) > 0 {
+		for iNdEx := len(m.Names) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Names[iNdEx])
+			copy(dAtA[i:], m.Names[iNdEx])
+			i = encodeVarintQueryService(dAtA, i, uint64(len(m.Names[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetTopKAttributeValuesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetTopKAttributeValuesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetTopKAttributeValuesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.K != 0 {
+		i = encodeVarintQueryService(dAtA, i, uint64(m.K))
+		i--
+		dAtA[i] = 0x28
+	}
+	if len(m.AttributeName) > 0 {
+		i -= len(m.AttributeName)
+		copy(dAtA[i:], m.AttributeName)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.AttributeName)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Query != nil {
+		{
+			size, err := m.Query.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQueryService(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ServiceName) > 0 {
+		i -= len(m.ServiceName)
+		copy(dAtA[i:], m.ServiceName)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.ServiceName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.WorkspaceId) > 0 {
+		i -= len(m.WorkspaceId)
+		copy(dAtA[i:], m.WorkspaceId)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetTopKAttributeValuesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetTopKAttributeValuesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetTopKAttributeValuesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Values[iNdEx])
+			copy(dAtA[i:], m.Values[iNdEx])
+			i = encodeVarintQueryService(dAtA, i, uint64(len(m.Values[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetBottomKAttributeValuesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetBottomKAttributeValuesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetBottomKAttributeValuesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.K != 0 {
+		i = encodeVarintQueryService(dAtA, i, uint64(m.K))
+		i--
+		dAtA[i] = 0x28
+	}
+	if len(m.AttributeName) > 0 {
+		i -= len(m.AttributeName)
+		copy(dAtA[i:], m.AttributeName)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.AttributeName)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Query != nil {
+		{
+			size, err := m.Query.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQueryService(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ServiceName) > 0 {
+		i -= len(m.ServiceName)
+		copy(dAtA[i:], m.ServiceName)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.ServiceName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.WorkspaceId) > 0 {
+		i -= len(m.WorkspaceId)
+		copy(dAtA[i:], m.WorkspaceId)
+		i = encodeVarintQueryService(dAtA, i, uint64(len(m.WorkspaceId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetBottomKAttributeValuesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetBottomKAttributeValuesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetBottomKAttributeValuesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Values[iNdEx])
+			copy(dAtA[i:], m.Values[iNdEx])
+			i = encodeVarintQueryService(dAtA, i, uint64(len(m.Values[iNdEx])))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -2719,165 +2998,6 @@ func (m *GetOperationsRequest) Size() (n int) {
 	return n
 }
 
-func (m *GetHotAttributeNamesRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.WorkspaceId)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.Service)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.OperationName)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *GetAttributeNamesResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Names) > 0 {
-		for _, s := range m.Names {
-			l = len(s)
-			n += 1 + l + sovQueryService(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *GetTopKAttributeValuesRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.WorkspaceId)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.Service)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.OperationName)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.AttributeName)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	if m.K != 0 {
-		n += 1 + sovQueryService(uint64(m.K))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *AttributeValueCount) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Value)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	if m.Count != 0 {
-		n += 1 + sovQueryService(uint64(m.Count))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *GetTopKAttributeValuesResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Values) > 0 {
-		for _, e := range m.Values {
-			l = e.Size()
-			n += 1 + l + sovQueryService(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *GetBottomKAttributeValuesResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Values) > 0 {
-		for _, e := range m.Values {
-			l = e.Size()
-			n += 1 + l + sovQueryService(uint64(l))
-		}
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
-func (m *GetBottomKAttributeValuesRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.WorkspaceId)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.Service)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.OperationName)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	l = len(m.AttributeName)
-	if l > 0 {
-		n += 1 + l + sovQueryService(uint64(l))
-	}
-	if m.K != 0 {
-		n += 1 + sovQueryService(uint64(m.K))
-	}
-	if m.XXX_unrecognized != nil {
-		n += len(m.XXX_unrecognized)
-	}
-	return n
-}
-
 func (m *Operation) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2907,6 +3027,206 @@ func (m *GetOperationsResponse) Size() (n int) {
 	if len(m.Operations) > 0 {
 		for _, e := range m.Operations {
 			l = e.Size()
+			n += 1 + l + sovQueryService(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetDependenciesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.StartTime)
+	n += 1 + l + sovQueryService(uint64(l))
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.EndTime)
+	n += 1 + l + sovQueryService(uint64(l))
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *DependenciesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Dependencies) > 0 {
+		for _, e := range m.Dependencies {
+			l = e.Size()
+			n += 1 + l + sovQueryService(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Dependency) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Parent)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.Child)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.CallCount != 0 {
+		n += 1 + sovQueryService(uint64(m.CallCount))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetIndexedAttributesNamesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.WorkspaceId)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.ServiceName)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.Query != nil {
+		l = m.Query.Size()
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.Limit != 0 {
+		n += 1 + sovQueryService(uint64(m.Limit))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetAttributesNamesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Names) > 0 {
+		for _, s := range m.Names {
+			l = len(s)
+			n += 1 + l + sovQueryService(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetTopKAttributeValuesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.WorkspaceId)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.ServiceName)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.Query != nil {
+		l = m.Query.Size()
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.AttributeName)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.K != 0 {
+		n += 1 + sovQueryService(uint64(m.K))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetTopKAttributeValuesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Values) > 0 {
+		for _, s := range m.Values {
+			l = len(s)
+			n += 1 + l + sovQueryService(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetBottomKAttributeValuesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.WorkspaceId)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.ServiceName)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.Query != nil {
+		l = m.Query.Size()
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	l = len(m.AttributeName)
+	if l > 0 {
+		n += 1 + l + sovQueryService(uint64(l))
+	}
+	if m.K != 0 {
+		n += 1 + sovQueryService(uint64(m.K))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *GetBottomKAttributeValuesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Values) > 0 {
+		for _, s := range m.Values {
+			l = len(s)
 			n += 1 + l + sovQueryService(uint64(l))
 		}
 	}
@@ -4026,904 +4346,6 @@ func (m *GetOperationsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetHotAttributeNamesRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetHotAttributeNamesRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetHotAttributeNamesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Service", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Service = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperationName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperationName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *GetAttributeNamesResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetAttributeNamesResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetAttributeNamesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Names", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Names = append(m.Names, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *GetTopKAttributeValuesRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetTopKAttributeValuesRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetTopKAttributeValuesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Service", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Service = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperationName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperationName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AttributeName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AttributeName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field K", wireType)
-			}
-			m.K = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.K |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *AttributeValueCount) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: AttributeValueCount: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AttributeValueCount: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Value = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Count", wireType)
-			}
-			m.Count = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Count |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *GetTopKAttributeValuesResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetTopKAttributeValuesResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetTopKAttributeValuesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Values = append(m.Values, &AttributeValueCount{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *GetBottomKAttributeValuesResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetBottomKAttributeValuesResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetBottomKAttributeValuesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Values = append(m.Values, &AttributeValueCount{})
-			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *GetBottomKAttributeValuesRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQueryService
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: GetBottomKAttributeValuesRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetBottomKAttributeValuesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Service", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Service = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperationName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperationName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AttributeName", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AttributeName = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field K", wireType)
-			}
-			m.K = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQueryService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.K |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQueryService(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQueryService
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *Operation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -5101,6 +4523,1165 @@ func (m *GetOperationsResponse) Unmarshal(dAtA []byte) error {
 			if err := m.Operations[len(m.Operations)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetDependenciesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetDependenciesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetDependenciesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StartTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.StartTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EndTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.EndTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DependenciesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DependenciesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DependenciesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Dependencies", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Dependencies = append(m.Dependencies, &Dependency{})
+			if err := m.Dependencies[len(m.Dependencies)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Dependency) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Dependency: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Dependency: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Parent", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Parent = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Child", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Child = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CallCount", wireType)
+			}
+			m.CallCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CallCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetIndexedAttributesNamesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetIndexedAttributesNamesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetIndexedAttributesNamesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Query", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Query == nil {
+				m.Query = &TraceQueryParameters{}
+			}
+			if err := m.Query.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Limit", wireType)
+			}
+			m.Limit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Limit |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetAttributesNamesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetAttributesNamesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetAttributesNamesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Names", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Names = append(m.Names, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetTopKAttributeValuesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetTopKAttributeValuesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetTopKAttributeValuesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Query", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Query == nil {
+				m.Query = &TraceQueryParameters{}
+			}
+			if err := m.Query.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AttributeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AttributeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field K", wireType)
+			}
+			m.K = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.K |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetTopKAttributeValuesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetTopKAttributeValuesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetTopKAttributeValuesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Values = append(m.Values, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetBottomKAttributeValuesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetBottomKAttributeValuesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetBottomKAttributeValuesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WorkspaceId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.WorkspaceId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ServiceName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Query", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Query == nil {
+				m.Query = &TraceQueryParameters{}
+			}
+			if err := m.Query.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AttributeName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AttributeName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field K", wireType)
+			}
+			m.K = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.K |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQueryService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetBottomKAttributeValuesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQueryService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetBottomKAttributeValuesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetBottomKAttributeValuesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQueryService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQueryService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Values = append(m.Values, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
