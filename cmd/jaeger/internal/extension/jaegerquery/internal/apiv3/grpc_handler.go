@@ -33,7 +33,10 @@ type Handler struct {
 var _ api_v3.QueryServiceServer = (*Handler)(nil)
 
 // GetTrace implements api_v3.QueryServiceServer's GetTrace
-func (h *Handler) GetTrace(request *api_v3.GetTraceRequest, stream api_v3.QueryService_GetTraceServer) error {
+func (h *Handler) GetTrace(
+	request *api_v3.GetTraceRequest,
+	stream api_v3.QueryService_GetTraceServer,
+) error {
 	traceID, err := model.TraceIDFromString(request.GetTraceId())
 	if err != nil {
 		return fmt.Errorf("malform trace ID: %w", err)
@@ -54,7 +57,10 @@ func (h *Handler) GetTrace(request *api_v3.GetTraceRequest, stream api_v3.QueryS
 }
 
 // FindTraces implements api_v3.QueryServiceServer's FindTraces
-func (h *Handler) FindTraces(request *api_v3.FindTracesRequest, stream api_v3.QueryService_FindTracesServer) error {
+func (h *Handler) FindTraces(
+	request *api_v3.FindTracesRequest,
+	stream api_v3.QueryService_FindTracesServer,
+) error {
 	return h.internalFindTraces(stream.Context(), request, stream.Send)
 }
 
@@ -100,7 +106,10 @@ func (h *Handler) internalFindTraces(
 }
 
 // GetServices implements api_v3.QueryServiceServer's GetServices
-func (h *Handler) GetServices(ctx context.Context, _ *api_v3.GetServicesRequest) (*api_v3.GetServicesResponse, error) {
+func (h *Handler) GetServices(
+	ctx context.Context,
+	_ *api_v3.GetServicesRequest,
+) (*api_v3.GetServicesResponse, error) {
 	services, err := h.QueryService.GetServices(ctx)
 	if err != nil {
 		return nil, err
@@ -111,11 +120,17 @@ func (h *Handler) GetServices(ctx context.Context, _ *api_v3.GetServicesRequest)
 }
 
 // GetOperations implements api_v3.QueryService's GetOperations
-func (h *Handler) GetOperations(ctx context.Context, request *api_v3.GetOperationsRequest) (*api_v3.GetOperationsResponse, error) {
-	operations, err := h.QueryService.GetOperations(ctx, tracestore.OperationQueryParams{
-		ServiceName: request.GetService(),
-		SpanKind:    request.GetSpanKind(),
-	})
+func (h *Handler) GetOperations(
+	ctx context.Context,
+	request *api_v3.GetOperationsRequest,
+) (*api_v3.GetOperationsResponse, error) {
+	operations, err := h.QueryService.GetOperations(
+		ctx,
+		tracestore.OperationQueryParams{
+			ServiceName: request.GetService(),
+			SpanKind:    request.GetSpanKind(),
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -132,17 +147,27 @@ func (h *Handler) GetOperations(ctx context.Context, request *api_v3.GetOperatio
 }
 
 // GetDependencies implements api_v3.QueryService's GetDependencies.
-func (h *Handler) GetDependencies(ctx context.Context, request *api_v3.GetDependenciesRequest) (*api_v3.DependenciesResponse, error) {
+func (h *Handler) GetDependencies(
+	ctx context.Context,
+	request *api_v3.GetDependenciesRequest,
+) (*api_v3.DependenciesResponse, error) {
 	if request == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing request")
 	}
 	startTime := request.GetStartTime()
 	endTime := request.GetEndTime()
 	if startTime.IsZero() || endTime.IsZero() {
-		return nil, status.Error(codes.InvalidArgument, "start_time and end_time are required")
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"start_time and end_time are required",
+		)
 	}
 
-	deps, err := h.QueryService.GetDependencies(ctx, endTime, endTime.Sub(startTime))
+	deps, err := h.QueryService.GetDependencies(
+		ctx,
+		endTime,
+		endTime.Sub(startTime),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -166,10 +191,12 @@ func (h *Handler) GetIndexedAttributesNames(
 	if query == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing query")
 	}
-	if query.GetStartTimeMin().IsZero() || query.GetStartTimeMax().IsZero() {
-		return nil, status.Error(codes.InvalidArgument, "start_time_min and start_time_max are required")
+	if request.GetServiceName() == "" {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"service_name is required",
+		)
 	}
-
 	searchDepth := int(query.GetSearchDepth())
 	if searchDepth <= 0 {
 		searchDepth = defaultAttributeSuggestionSearchDepth
@@ -207,8 +234,17 @@ func (h *Handler) GetIndexedAttributesNames(
 }
 
 // GetTopKAttributeValues implements api_v3.QueryService's GetTopKAttributeValues.
-func (h *Handler) GetTopKAttributeValues(ctx context.Context, request *api_v3.GetTopKAttributeValuesRequest) (*api_v3.GetTopKAttributeValuesResponse, error) {
-	resp, err := h.getKAttributeValues(ctx, request.GetQuery(), request.GetAttributeName(), int(request.GetK()), true)
+func (h *Handler) GetTopKAttributeValues(
+	ctx context.Context,
+	request *api_v3.GetTopKAttributeValuesRequest,
+) (*api_v3.GetTopKAttributeValuesResponse, error) {
+	resp, err := h.getKAttributeValues(
+		ctx,
+		request.GetQuery(),
+		request.GetAttributeName(),
+		int(request.GetK()),
+		true,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -216,8 +252,17 @@ func (h *Handler) GetTopKAttributeValues(ctx context.Context, request *api_v3.Ge
 }
 
 // GetBottomKAttributeValues implements api_v3.QueryService's GetBottomKAttributeValues.
-func (h *Handler) GetBottomKAttributeValues(ctx context.Context, request *api_v3.GetBottomKAttributeValuesRequest) (*api_v3.GetBottomKAttributeValuesResponse, error) {
-	resp, err := h.getKAttributeValues(ctx, request.GetQuery(), request.GetAttributeName(), int(request.GetK()), false)
+func (h *Handler) GetBottomKAttributeValues(
+	ctx context.Context,
+	request *api_v3.GetBottomKAttributeValuesRequest,
+) (*api_v3.GetBottomKAttributeValuesResponse, error) {
+	resp, err := h.getKAttributeValues(
+		ctx,
+		request.GetQuery(),
+		request.GetAttributeName(),
+		int(request.GetK()),
+		false,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -235,10 +280,16 @@ func (h *Handler) getKAttributeValues(
 		return nil, status.Error(codes.InvalidArgument, "missing query")
 	}
 	if attributeName == "" {
-		return nil, status.Error(codes.InvalidArgument, "missing attribute_name")
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"missing attribute_name",
+		)
 	}
 	if query.GetStartTimeMin().IsZero() || query.GetStartTimeMax().IsZero() {
-		return nil, status.Error(codes.InvalidArgument, "start_time_min and start_time_max are required")
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"start_time_min and start_time_max are required",
+		)
 	}
 	if k <= 0 {
 		k = defaultAttributeValuesK
@@ -282,8 +333,13 @@ func receiveTraces(
 		for _, trace := range traces {
 			tracesData := jptrace.TracesData(trace)
 			if err := sendFn(&tracesData); err != nil {
-				return status.Error(codes.Internal,
-					fmt.Sprintf("failed to send response stream chunk to client: %v", err))
+				return status.Error(
+					codes.Internal,
+					fmt.Sprintf(
+						"failed to send response stream chunk to client: %v",
+						err,
+					),
+				)
 			}
 		}
 	}
