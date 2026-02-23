@@ -133,6 +133,51 @@ func (qs QueryService) GetOperations(
 	return qs.traceReader.GetOperations(ctx, query)
 }
 
+func (qs QueryService) GetIndexedAttributesNames(
+	ctx context.Context,
+	query tracestore.IndexedAttributesNamesQueryParams,
+) ([]string, error) {
+	indexedReader, ok := qs.traceReader.(tracestore.IndexedAttributesReader)
+	if !ok {
+		return nil, tracestore.ErrIndexedAttributesNamesNotSupported
+	}
+	names, err := indexedReader.GetIndexedAttributesNames(ctx, query)
+	if names == nil {
+		names = []string{}
+	}
+	return names, err
+}
+
+func (qs QueryService) GetTopKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	valuesReader, ok := qs.traceReader.(tracestore.AttributeValuesReader)
+	if !ok {
+		return nil, tracestore.ErrAttributeValuesQueryNotSupported
+	}
+	values, err := valuesReader.GetTopKAttributeValues(ctx, query)
+	if values == nil {
+		values = []string{}
+	}
+	return values, err
+}
+
+func (qs QueryService) GetBottomKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	valuesReader, ok := qs.traceReader.(tracestore.AttributeValuesReader)
+	if !ok {
+		return nil, tracestore.ErrAttributeValuesQueryNotSupported
+	}
+	values, err := valuesReader.GetBottomKAttributeValues(ctx, query)
+	if values == nil {
+		values = []string{}
+	}
+	return values, err
+}
+
 // FindTraces searches for traces matching the query parameters.
 // The iterator is single-use: once consumed, it cannot be used again.
 //

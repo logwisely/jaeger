@@ -16,6 +16,34 @@ import (
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore/mocks"
 )
 
+type indexedAttributesReader struct {
+	tracestore.Reader
+	onGetIndexedAttributesNames func(context.Context, tracestore.IndexedAttributesNamesQueryParams) ([]string, error)
+	onGetTopKAttributeValues    func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
+	onGetBottomKAttributeValues func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
+}
+
+func (r *indexedAttributesReader) GetIndexedAttributesNames(
+	ctx context.Context,
+	query tracestore.IndexedAttributesNamesQueryParams,
+) ([]string, error) {
+	return r.onGetIndexedAttributesNames(ctx, query)
+}
+
+func (r *indexedAttributesReader) GetTopKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	return r.onGetTopKAttributeValues(ctx, query)
+}
+
+func (r *indexedAttributesReader) GetBottomKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	return r.onGetBottomKAttributeValues(ctx, query)
+}
+
 func TestSuccessfulUnderlyingCalls(t *testing.T) {
 	mf := metricstest.NewFactory(0)
 
@@ -158,6 +186,128 @@ func TestFailingUnderlyingCalls(t *testing.T) {
 	}
 
 	checkExpectedExistingAndNonExistentCounters(t, counters, expecteds, gauges, existingKeys, nonExistentKeys)
+}
+
+func TestGetIndexedAttributesNames(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	var actualQuery tracestore.IndexedAttributesNamesQueryParams
+	reader := &indexedAttributesReader{
+		Reader: mockReader,
+		onGetIndexedAttributesNames: func(_ context.Context, query tracestore.IndexedAttributesNamesQueryParams) ([]string, error) {
+			actualQuery = query
+			return []string{"http.method"}, nil
+		},
+	}
+	mrs := NewReaderDecorator(reader, metricstest.NewFactory(0))
+	expectedQuery := tracestore.IndexedAttributesNamesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+		},
+		Limit: 5,
+	}
+
+	names, err := mrs.GetIndexedAttributesNames(context.Background(), expectedQuery)
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"http.method"}, names)
+	assert.Equal(t, expectedQuery, actualQuery)
+}
+
+func TestGetIndexedAttributesNamesNotSupported(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	mrs := NewReaderDecorator(mockReader, metricstest.NewFactory(0))
+
+	names, err := mrs.GetIndexedAttributesNames(
+		context.Background(),
+		tracestore.IndexedAttributesNamesQueryParams{},
+	)
+
+	assert.ErrorIs(t, err, tracestore.ErrIndexedAttributesNamesNotSupported)
+	assert.Nil(t, names)
+}
+
+func TestGetTopKAttributeValues(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	var actualQuery tracestore.KAttributeValuesQueryParams
+	reader := &indexedAttributesReader{
+		Reader: mockReader,
+		onGetTopKAttributeValues: func(_ context.Context, query tracestore.KAttributeValuesQueryParams) ([]string, error) {
+			actualQuery = query
+			return []string{"GET"}, nil
+		},
+		onGetBottomKAttributeValues: func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error) {
+			return nil, assert.AnError
+		},
+	}
+	mrs := NewReaderDecorator(reader, metricstest.NewFactory(0))
+	expectedQuery := tracestore.KAttributeValuesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+		},
+		AttributeName: "http.method",
+		K:             3,
+	}
+
+	values, err := mrs.GetTopKAttributeValues(context.Background(), expectedQuery)
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"GET"}, values)
+	assert.Equal(t, expectedQuery, actualQuery)
+}
+
+func TestGetTopKAttributeValuesNotSupported(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	mrs := NewReaderDecorator(mockReader, metricstest.NewFactory(0))
+
+	values, err := mrs.GetTopKAttributeValues(
+		context.Background(),
+		tracestore.KAttributeValuesQueryParams{},
+	)
+
+	assert.ErrorIs(t, err, tracestore.ErrAttributeValuesQueryNotSupported)
+	assert.Nil(t, values)
+}
+
+func TestGetBottomKAttributeValues(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	var actualQuery tracestore.KAttributeValuesQueryParams
+	reader := &indexedAttributesReader{
+		Reader: mockReader,
+		onGetTopKAttributeValues: func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error) {
+			return nil, assert.AnError
+		},
+		onGetBottomKAttributeValues: func(_ context.Context, query tracestore.KAttributeValuesQueryParams) ([]string, error) {
+			actualQuery = query
+			return []string{"DELETE"}, nil
+		},
+	}
+	mrs := NewReaderDecorator(reader, metricstest.NewFactory(0))
+	expectedQuery := tracestore.KAttributeValuesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+		},
+		AttributeName: "http.method",
+		K:             2,
+	}
+
+	values, err := mrs.GetBottomKAttributeValues(context.Background(), expectedQuery)
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"DELETE"}, values)
+	assert.Equal(t, expectedQuery, actualQuery)
+}
+
+func TestGetBottomKAttributeValuesNotSupported(t *testing.T) {
+	mockReader := &mocks.Reader{}
+	mrs := NewReaderDecorator(mockReader, metricstest.NewFactory(0))
+
+	values, err := mrs.GetBottomKAttributeValues(
+		context.Background(),
+		tracestore.KAttributeValuesQueryParams{},
+	)
+
+	assert.ErrorIs(t, err, tracestore.ErrAttributeValuesQueryNotSupported)
+	assert.Nil(t, values)
 }
 
 func emptyIter[T any](td []T, err error) iter.Seq2[[]T, error] {

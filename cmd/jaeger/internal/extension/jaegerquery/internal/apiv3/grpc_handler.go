@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-	"sort"
 	"time"
 
 	"go.opentelemetry.io/collector/pdata/ptrace"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/jaegertracing/jaeger-idl/model/v1"
 	"github.com/jaegertracing/jaeger/cmd/jaeger/internal/extension/jaegerquery/querysvc"
-	"github.com/jaegertracing/jaeger/internal/jiter"
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
@@ -191,11 +189,12 @@ func (h *Handler) GetIndexedAttributesNames(
 	if query == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing query")
 	}
-	if request.GetServiceName() == "" {
-		return nil, status.Error(
-			codes.InvalidArgument,
-			"service_name is required",
-		)
+	serviceName := request.GetServiceName()
+	if serviceName == "" {
+		serviceName = query.GetServiceName()
+	}
+	if serviceName == "" {
+		return nil, status.Error(codes.InvalidArgument, "service_name is required")
 	}
 	searchDepth := int(query.GetSearchDepth())
 	if searchDepth <= 0 {
@@ -205,30 +204,24 @@ func (h *Handler) GetIndexedAttributesNames(
 	if limit <= 0 {
 		limit = defaultAttributeNamesLimit
 	}
-
-	queryParams := querysvc.TraceQueryParams{
-		TraceQueryParams: tracestore.TraceQueryParams{
-			ServiceName:   query.GetServiceName(),
-			OperationName: query.GetOperationName(),
-			Attributes:    jptrace.PlainMapToPcommonMap(query.GetAttributes()),
-			SearchDepth:   searchDepth,
-			StartTimeMin:  query.GetStartTimeMin(),
-			StartTimeMax:  query.GetStartTimeMax(),
-			DurationMin:   time.Duration(query.GetDurationMin()),
-			DurationMax:   time.Duration(query.GetDurationMax()),
+	names, err := h.QueryService.GetIndexedAttributesNames(
+		ctx,
+		tracestore.IndexedAttributesNamesQueryParams{
+			Query: tracestore.TraceQueryParams{
+				ServiceName:   serviceName,
+				OperationName: query.GetOperationName(),
+				Attributes:    jptrace.PlainMapToPcommonMap(query.GetAttributes()),
+				SearchDepth:   searchDepth,
+				StartTimeMin:  query.GetStartTimeMin(),
+				StartTimeMax:  query.GetStartTimeMax(),
+				DurationMin:   time.Duration(query.GetDurationMin()),
+				DurationMax:   time.Duration(query.GetDurationMax()),
+			},
+			Limit: limit,
 		},
-		RawTraces: query.GetRawTraces(),
-	}
-
-	findTracesIter := h.QueryService.FindTraces(ctx, queryParams)
-	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	)
 	if err != nil {
 		return nil, err
-	}
-	names := collectAttributeNames(traces)
-	sort.Strings(names)
-	if len(names) > limit {
-		names = names[:limit]
 	}
 	return &api_v3.GetAttributesNamesResponse{Names: names}, nil
 }
@@ -299,8 +292,8 @@ func (h *Handler) getKAttributeValues(
 		searchDepth = defaultAttributeSuggestionSearchDepth
 	}
 
-	queryParams := querysvc.TraceQueryParams{
-		TraceQueryParams: tracestore.TraceQueryParams{
+	params := tracestore.KAttributeValuesQueryParams{
+		Query: tracestore.TraceQueryParams{
 			ServiceName:   query.GetServiceName(),
 			OperationName: query.GetOperationName(),
 			Attributes:    jptrace.PlainMapToPcommonMap(query.GetAttributes()),
@@ -310,16 +303,13 @@ func (h *Handler) getKAttributeValues(
 			DurationMin:   time.Duration(query.GetDurationMin()),
 			DurationMax:   time.Duration(query.GetDurationMax()),
 		},
-		RawTraces: query.GetRawTraces(),
+		AttributeName: attributeName,
+		K:             k,
 	}
-
-	findTracesIter := h.QueryService.FindTraces(ctx, queryParams)
-	traces, err := jiter.FlattenWithErrors(findTracesIter)
-	if err != nil {
-		return nil, err
+	if desc {
+		return h.QueryService.GetTopKAttributeValues(ctx, params)
 	}
-	counts := collectAttributeValueCounts(traces, attributeName)
-	return selectKFromCounts(counts, k, desc), nil
+	return h.QueryService.GetBottomKAttributeValues(ctx, params)
 }
 
 func receiveTraces(
