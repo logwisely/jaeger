@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"time"
 
@@ -350,15 +349,15 @@ func (h *HTTPGateway) getIndexedAttributesNames(
 		limit = defaultAttributeNamesLimit
 	}
 
-	findTracesIter := h.QueryService.FindTraces(r.Context(), *queryParams)
-	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	names, err := h.QueryService.GetIndexedAttributesNames(
+		r.Context(),
+		tracestore.IndexedAttributesNamesQueryParams{
+			Query: queryParams.TraceQueryParams,
+			Limit: limit,
+		},
+	)
 	if h.tryHandleError(w, err, http.StatusInternalServerError) {
 		return
-	}
-	names := collectAttributeNames(traces)
-	sort.Strings(names)
-	if len(names) > limit {
-		names = names[:limit]
 	}
 	h.marshalResponse(
 		&api_v3.GetAttributesNamesResponse{Names: names},
@@ -414,13 +413,23 @@ func (h *HTTPGateway) getKAttributeValues(
 		k = defaultAttributeValuesK
 	}
 
-	findTracesIter := h.QueryService.FindTraces(r.Context(), *queryParams)
-	traces, err := jiter.FlattenWithErrors(findTracesIter)
+	params := tracestore.KAttributeValuesQueryParams{
+		Query:         queryParams.TraceQueryParams,
+		AttributeName: attributeName,
+		K:             k,
+	}
+	var (
+		values []string
+		err    error
+	)
+	if desc {
+		values, err = h.QueryService.GetTopKAttributeValues(r.Context(), params)
+	} else {
+		values, err = h.QueryService.GetBottomKAttributeValues(r.Context(), params)
+	}
 	if h.tryHandleError(w, err, http.StatusInternalServerError) {
 		return
 	}
-	counts := collectAttributeValueCounts(traces, attributeName)
-	values := selectKFromCounts(counts, k, desc)
 	if desc {
 		h.marshalResponse(
 			&api_v3.GetTopKAttributeValuesResponse{Values: values},

@@ -43,6 +43,42 @@ type testQueryService struct {
 	archiveTraceWriter *tracestoremocks.Writer
 }
 
+type indexedAttributesReader struct {
+	tracestore.Reader
+
+	indexedNamesQueryParams tracestore.IndexedAttributesNamesQueryParams
+	topValuesQueryParams    tracestore.KAttributeValuesQueryParams
+	bottomValuesQueryParams tracestore.KAttributeValuesQueryParams
+	names                   []string
+	topValues               []string
+	bottomValues            []string
+	err                     error
+}
+
+func (r *indexedAttributesReader) GetIndexedAttributesNames(
+	_ context.Context,
+	query tracestore.IndexedAttributesNamesQueryParams,
+) ([]string, error) {
+	r.indexedNamesQueryParams = query
+	return r.names, r.err
+}
+
+func (r *indexedAttributesReader) GetTopKAttributeValues(
+	_ context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	r.topValuesQueryParams = query
+	return r.topValues, r.err
+}
+
+func (r *indexedAttributesReader) GetBottomKAttributeValues(
+	_ context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	r.bottomValuesQueryParams = query
+	return r.bottomValues, r.err
+}
+
 type testOption func(*testQueryService, *QueryServiceOptions)
 
 func withArchiveTraceReader() testOption {
@@ -763,4 +799,108 @@ func TestQueryServiceGetServicesReturnsEmptySlice(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, services)
 	require.Empty(t, services)
+}
+
+func TestGetIndexedAttributesNames(t *testing.T) {
+	query := tracestore.IndexedAttributesNamesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+			SearchDepth: 10,
+		},
+		Limit: 20,
+	}
+	expected := []string{"http.method", "http.status_code"}
+
+	mockReader := &tracestoremocks.Reader{}
+	reader := &indexedAttributesReader{
+		Reader: mockReader,
+		names:  expected,
+	}
+	qs := NewQueryService(reader, nil, QueryServiceOptions{})
+
+	actual, err := qs.GetIndexedAttributesNames(context.Background(), query)
+	require.NoError(t, err)
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, query, reader.indexedNamesQueryParams)
+}
+
+func TestGetIndexedAttributesNamesReaderNotSupported(t *testing.T) {
+	qs := NewQueryService(&tracestoremocks.Reader{}, nil, QueryServiceOptions{})
+
+	names, err := qs.GetIndexedAttributesNames(
+		context.Background(),
+		tracestore.IndexedAttributesNamesQueryParams{},
+	)
+	require.ErrorIs(t, err, tracestore.ErrIndexedAttributesNamesNotSupported)
+	assert.Nil(t, names)
+}
+
+func TestGetTopKAttributeValues(t *testing.T) {
+	query := tracestore.KAttributeValuesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+			SearchDepth: 10,
+		},
+		AttributeName: "http.method",
+		K:             5,
+	}
+	expected := []string{"GET", "POST"}
+
+	mockReader := &tracestoremocks.Reader{}
+	reader := &indexedAttributesReader{
+		Reader:    mockReader,
+		topValues: expected,
+	}
+	qs := NewQueryService(reader, nil, QueryServiceOptions{})
+
+	actual, err := qs.GetTopKAttributeValues(context.Background(), query)
+	require.NoError(t, err)
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, query, reader.topValuesQueryParams)
+}
+
+func TestGetTopKAttributeValuesReaderNotSupported(t *testing.T) {
+	qs := NewQueryService(&tracestoremocks.Reader{}, nil, QueryServiceOptions{})
+
+	values, err := qs.GetTopKAttributeValues(
+		context.Background(),
+		tracestore.KAttributeValuesQueryParams{},
+	)
+	require.ErrorIs(t, err, tracestore.ErrAttributeValuesQueryNotSupported)
+	assert.Nil(t, values)
+}
+
+func TestGetBottomKAttributeValues(t *testing.T) {
+	query := tracestore.KAttributeValuesQueryParams{
+		Query: tracestore.TraceQueryParams{
+			ServiceName: "frontend",
+			SearchDepth: 10,
+		},
+		AttributeName: "http.method",
+		K:             2,
+	}
+	expected := []string{"DELETE", "PATCH"}
+
+	mockReader := &tracestoremocks.Reader{}
+	reader := &indexedAttributesReader{
+		Reader:       mockReader,
+		bottomValues: expected,
+	}
+	qs := NewQueryService(reader, nil, QueryServiceOptions{})
+
+	actual, err := qs.GetBottomKAttributeValues(context.Background(), query)
+	require.NoError(t, err)
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, query, reader.bottomValuesQueryParams)
+}
+
+func TestGetBottomKAttributeValuesReaderNotSupported(t *testing.T) {
+	qs := NewQueryService(&tracestoremocks.Reader{}, nil, QueryServiceOptions{})
+
+	values, err := qs.GetBottomKAttributeValues(
+		context.Background(),
+		tracestore.KAttributeValuesQueryParams{},
+	)
+	require.ErrorIs(t, err, tracestore.ErrAttributeValuesQueryNotSupported)
+	assert.Nil(t, values)
 }

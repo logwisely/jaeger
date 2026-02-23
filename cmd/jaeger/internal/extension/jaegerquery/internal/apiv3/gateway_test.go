@@ -5,6 +5,7 @@ package apiv3
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"iter"
@@ -44,11 +45,49 @@ var (
 )
 
 type testGateway struct {
-	reader *tracestoremocks.Reader
-	url    string
-	router *http.ServeMux
+	reader        *tracestoremocks.Reader
+	indexedReader *mockIndexedAttributesReader
+	url           string
+	router        *http.ServeMux
 	// used to set a tenancy header when executing requests
 	setupRequest func(*http.Request)
+}
+
+type mockIndexedAttributesReader struct {
+	tracestore.Reader
+	onGetIndexedAttributesNames func(context.Context, tracestore.IndexedAttributesNamesQueryParams) ([]string, error)
+	onGetTopKAttributeValues    func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
+	onGetBottomKAttributeValues func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
+}
+
+func (r *mockIndexedAttributesReader) GetIndexedAttributesNames(
+	ctx context.Context,
+	query tracestore.IndexedAttributesNamesQueryParams,
+) ([]string, error) {
+	if r.onGetIndexedAttributesNames == nil {
+		return nil, assert.AnError
+	}
+	return r.onGetIndexedAttributesNames(ctx, query)
+}
+
+func (r *mockIndexedAttributesReader) GetTopKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	if r.onGetTopKAttributeValues == nil {
+		return nil, assert.AnError
+	}
+	return r.onGetTopKAttributeValues(ctx, query)
+}
+
+func (r *mockIndexedAttributesReader) GetBottomKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	if r.onGetBottomKAttributeValues == nil {
+		return nil, assert.AnError
+	}
+	return r.onGetBottomKAttributeValues(ctx, query)
 }
 
 func (gw *testGateway) execRequest(t *testing.T, url string) ([]byte, int) {
@@ -216,11 +255,14 @@ func (gw *testGateway) runGatewayFindTraces(t *testing.T) {
 
 func (gw *testGateway) runGatewayGetIndexedAttributesNames(t *testing.T) {
 	q, qp := mockFindQueries()
-	gw.reader.On("FindTraces", matchContext, qp).
-		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
-			yield([]ptrace.Traces{makeTestTraceWithAttributes()}, nil)
-		})).
-		Once()
+	gw.indexedReader.onGetIndexedAttributesNames = func(
+		_ context.Context,
+		params tracestore.IndexedAttributesNamesQueryParams,
+	) ([]string, error) {
+		assert.Equal(t, qp, params.Query)
+		assert.Equal(t, defaultAttributeNamesLimit, params.Limit)
+		return []string{"error", "http.method", "http.status_code", "resource.attr"}, nil
+	}
 
 	body, statusCode := gw.execRequest(
 		t,
@@ -241,11 +283,15 @@ func (gw *testGateway) runGatewayGetIndexedAttributesNames(t *testing.T) {
 
 func (gw *testGateway) runGatewayGetTopKAttributeValues(t *testing.T) {
 	q, qp := mockFindQueries()
-	gw.reader.On("FindTraces", matchContext, qp).
-		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
-			yield([]ptrace.Traces{makeTestTraceWithAttributes()}, nil)
-		})).
-		Once()
+	gw.indexedReader.onGetTopKAttributeValues = func(
+		_ context.Context,
+		params tracestore.KAttributeValuesQueryParams,
+	) ([]string, error) {
+		assert.Equal(t, qp, params.Query)
+		assert.Equal(t, "http.method", params.AttributeName)
+		assert.Equal(t, 2, params.K)
+		return []string{"GET", "POST"}, nil
+	}
 
 	q.Set(paramAttributeName, "http.method")
 	q.Set(paramK, "2")
@@ -263,11 +309,15 @@ func (gw *testGateway) runGatewayGetTopKAttributeValues(t *testing.T) {
 
 func (gw *testGateway) runGatewayGetBottomKAttributeValues(t *testing.T) {
 	q, qp := mockFindQueries()
-	gw.reader.On("FindTraces", matchContext, qp).
-		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
-			yield([]ptrace.Traces{makeTestTraceWithAttributes()}, nil)
-		})).
-		Once()
+	gw.indexedReader.onGetBottomKAttributeValues = func(
+		_ context.Context,
+		params tracestore.KAttributeValuesQueryParams,
+	) ([]string, error) {
+		assert.Equal(t, qp, params.Query)
+		assert.Equal(t, "http.method", params.AttributeName)
+		assert.Equal(t, 1, params.K)
+		return []string{"POST"}, nil
+	}
 
 	q.Set(paramAttributeName, "http.method")
 	q.Set(paramK, "1")

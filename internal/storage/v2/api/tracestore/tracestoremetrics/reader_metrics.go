@@ -14,7 +14,11 @@ import (
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 )
 
-var _ tracestore.Reader = (*ReadMetricsDecorator)(nil)
+var (
+	_ tracestore.Reader                  = (*ReadMetricsDecorator)(nil)
+	_ tracestore.IndexedAttributesReader = (*ReadMetricsDecorator)(nil)
+	_ tracestore.AttributeValuesReader   = (*ReadMetricsDecorator)(nil)
+)
 
 // ReadMetricsDecorator wraps a tracestore.Reader and collects metrics around each read operation.
 type ReadMetricsDecorator struct {
@@ -141,4 +145,37 @@ func (m *ReadMetricsDecorator) GetOperations(
 	retMe, err := m.traceReader.GetOperations(ctx, query)
 	m.getOperationsMetrics.emit(err, time.Since(start), len(retMe))
 	return retMe, err
+}
+
+func (m *ReadMetricsDecorator) GetIndexedAttributesNames(
+	ctx context.Context,
+	query tracestore.IndexedAttributesNamesQueryParams,
+) ([]string, error) {
+	indexedReader, ok := m.traceReader.(tracestore.IndexedAttributesReader)
+	if !ok {
+		return nil, tracestore.ErrIndexedAttributesNamesNotSupported
+	}
+	return indexedReader.GetIndexedAttributesNames(ctx, query)
+}
+
+func (m *ReadMetricsDecorator) GetTopKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	valuesReader, ok := m.traceReader.(tracestore.AttributeValuesReader)
+	if !ok {
+		return nil, tracestore.ErrAttributeValuesQueryNotSupported
+	}
+	return valuesReader.GetTopKAttributeValues(ctx, query)
+}
+
+func (m *ReadMetricsDecorator) GetBottomKAttributeValues(
+	ctx context.Context,
+	query tracestore.KAttributeValuesQueryParams,
+) ([]string, error) {
+	valuesReader, ok := m.traceReader.(tracestore.AttributeValuesReader)
+	if !ok {
+		return nil, tracestore.ErrAttributeValuesQueryNotSupported
+	}
+	return valuesReader.GetBottomKAttributeValues(ctx, query)
 }
