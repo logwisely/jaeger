@@ -43,10 +43,13 @@ const (
 	paramDurationMax    = "query.duration_max"
 	paramQueryRawTraces = "query.raw_traces"
 
-	routeGetTrace      = "/api/v3/traces/{" + paramTraceID + "}"
-	routeFindTraces    = "/api/v3/traces"
-	routeGetServices   = "/api/v3/services"
-	routeGetOperations = "/api/v3/operations"
+	routeGetTrace                  = "/api/v3/traces/{" + paramTraceID + "}"
+	routeFindTraces                = "/api/v3/traces"
+	routeGetServices               = "/api/v3/services"
+	routeGetOperations             = "/api/v3/operations"
+	routeGetIndexedAttributesNames = "/api/v3/attributes/indexed/names"
+	routeGetTopKAttributeValues    = "/api/v3/attributes/values/topk"
+	routeGetBottomKAttributeValues = "/api/v3/attributes/values/bottomk"
 )
 
 // HTTPGateway exposes APIv3 HTTP endpoints.
@@ -63,6 +66,9 @@ func (h *HTTPGateway) RegisterRoutes(router *http.ServeMux) {
 	h.addRoute(router, h.findTraces, routeFindTraces, http.MethodGet)
 	h.addRoute(router, h.getServices, routeGetServices, http.MethodGet)
 	h.addRoute(router, h.getOperations, routeGetOperations, http.MethodGet)
+	h.addRoute(router, h.getIndexedAttributesNames, routeGetIndexedAttributesNames, http.MethodGet)
+	h.addRoute(router, h.getTopKAttributeValues, routeGetTopKAttributeValues, http.MethodGet)
+	h.addRoute(router, h.getBottomKAttributeValues, routeGetBottomKAttributeValues, http.MethodGet)
 }
 
 // addRoute adds a new endpoint to the router with given path and handler function.
@@ -149,6 +155,41 @@ func (h *HTTPGateway) returnTraces(traces []ptrace.Traces, err error, w http.Res
 
 func (*HTTPGateway) marshalResponse(response proto.Message, w http.ResponseWriter) {
 	_ = new(jsonpb.Marshaler).Marshal(w, response)
+}
+
+func (h *HTTPGateway) getIndexedAttributesNames(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	query := r.URL.Query()
+	req := &api_v3.GetIndexedAttributesNamesRequest{
+		ServiceName: query.Get("service"),
+	}
+	h.Logger.Info("getIndexedAttributesNames called with query",
+		zap.String("ServiceName", req.ServiceName))
+
+	resp := &api_v3.GetAttributesNamesResponse{
+		Names: []string{"http.method", "http.status_code"},
+	}
+	h.marshalResponse(resp, w)
+}
+
+func (h *HTTPGateway) getTopKAttributeValues(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	ret := &api_v3.GetTopKAttributeValuesResponse{
+		Values: []string{"GET"},
+	}
+	h.marshalResponse(ret, w)
+}
+
+func (h *HTTPGateway) getBottomKAttributeValues(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	ret := &api_v3.GetBottomKAttributeValuesResponse{Values: []string{"POST"}}
+	h.marshalResponse(ret, w)
 }
 
 func (h *HTTPGateway) getTrace(w http.ResponseWriter, r *http.Request) {
