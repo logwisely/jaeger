@@ -128,6 +128,92 @@ func (h *Handler) GetOperations(ctx context.Context, request *api_v3.GetOperatio
 	}, nil
 }
 
+func (h *Handler) GetIndexedAttributesNames(
+	ctx context.Context,
+	request *api_v3.GetIndexedAttributesNamesRequest,
+) (*api_v3.GetAttributesNamesResponse, error) {
+	// workspaceID := request.GetWorkspaceId()
+	// serviceName := request.GetServiceName()
+	// query := request.GetQuery()
+
+	// indexedAttributeNames, err := h.QueryService.GetIndexedAttributesNames(ctx, workspaceID, serviceName, query)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &api_v3.GetAttributesNamesResponse{
+		Names: []string{"http.status_code", "error"},
+	}, nil
+}
+
+func (h *Handler) GetTopKAttributeValues(
+	ctx context.Context,
+	request *api_v3.GetTopKAttributeValuesRequest,
+) (*api_v3.GetTopKAttributeValuesResponse, error) {
+	// workspaceID := request.GetWorkspaceId()
+	// serviceName := request.GetServiceName()
+	// operationName := request.GetOperationName()
+	// attributeName := request.GetAttributeName()
+	k := int(request.GetK())
+	//query := request.GetQuery()
+
+	if k <= 0 {
+		k = 10 // default value
+	}
+
+	// queryParams := querysvc.GetBottomKAttributeValuesParams{
+	// 	WorkspaceID:   workspaceID,
+	// 	ServiceName:   serviceName,
+	// 	OperationName: operationName,
+	// 	AttributeName: attributeName,
+	// 	K:             k,
+	// 	Query:         v1adapter.ToV1AttributesQueryParameters(query),
+	// }
+
+	// values, err := h.QueryService.GetTopKAttributeValues(ctx, queryParams)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &api_v3.GetTopKAttributeValuesResponse{
+		Values: []string{"GET"}, // TODO: implement GetTopKAttributeValues in QueryService and return actual values
+	}, nil
+}
+
+func (h *Handler) GetBottomKAttributeValues(
+	ctx context.Context,
+	request *api_v3.GetBottomKAttributeValuesRequest,
+) (*api_v3.GetBottomKAttributeValuesResponse, error) {
+	// workspaceID := request.GetWorkspaceId()
+	// serviceName := request.GetServiceName()
+	// operationName := request.GetOperationName()
+	// attributeName := request.GetAttributeName()
+	k := int(request.GetK())
+	// query := request.GetQuery()
+
+	if k <= 0 {
+		k = 10 // default value
+	}
+
+	// queryParams := querysvc.GetBottomKAttributeValuesParams{
+	// 	WorkspaceID:   workspaceID,
+	// 	ServiceName:   serviceName,
+	// 	OperationName: operationName,
+	// 	AttributeName: attributeName,
+	// 	K:             k,
+	// 	Query:         v1adapter.ToV1AttributesQueryParameters(query),
+	// }
+
+	// values, err := h.QueryService.GetBottomKAttributeValues(ctx, queryParams)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &api_v3.GetBottomKAttributeValuesResponse{
+		Values: []string{"GET"}, // TODO: implement GetBottomKAttributeValues in QueryService and return actual values
+	}, nil
+}
+
 func receiveTraces(
 	seq iter.Seq2[[]ptrace.Traces, error],
 	sendFn func(*jptrace.TracesData) error,
