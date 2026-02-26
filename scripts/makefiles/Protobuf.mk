@@ -106,6 +106,7 @@ STORAGE_V2_PATH=$(PROTO_GEN)/storage/v2
 STORAGE_V2_PATCHED_DIR=$(PROTO_GEN)/.patched/storage_v2
 STORAGE_V2_PATCHED_TRACE=$(STORAGE_V2_PATCHED_DIR)/trace_storage.proto
 STORAGE_V2_PATCHED_DEPENDENCY=$(STORAGE_V2_PATCHED_DIR)/dependency_storage.proto
+STORAGE_V2_PATCHED_ATTRIBUTES=$(STORAGE_V2_PATCHED_DIR)/attributes_storage.proto
 
 .PHONY: patch-storage-v2
 patch-storage-v2:
@@ -116,11 +117,15 @@ patch-storage-v2:
 	cat idl/proto/storage/v2/dependency_storage.proto | \
 		$(SED) -f ./$(PROTO_GEN)/patch.sed \
 		> $(STORAGE_V2_PATCHED_DEPENDENCY)
+	cat idl/proto/storage/v2/attributes_storage.proto | \
+		$(SED) -f ./$(PROTO_GEN)/patch.sed \
+		> $(STORAGE_V2_PATCHED_ATTRIBUTES)
 
 .PHONY: proto-storage-v2
 proto-storage-v2: patch-storage-v2
 	$(call proto_compile, $(STORAGE_V2_PATH), $(STORAGE_V2_PATCHED_TRACE), -I$(STORAGE_V2_PATCHED_DIR) -Iinternal/storage/v2/grpc/)
 	$(call proto_compile, $(STORAGE_V2_PATH), $(STORAGE_V2_PATCHED_DEPENDENCY), -I$(STORAGE_V2_PATCHED_DIR) -Iinternal/storage/v2/grpc/)
+	$(call proto_compile, $(STORAGE_V2_PATH), $(STORAGE_V2_PATCHED_ATTRIBUTES), -I$(STORAGE_V2_PATCHED_DIR) -Iinternal/storage/v2/grpc/)
 	@echo "🏗️  replace first instance of OTEL import with internal type"
 	$(SED) -i '0,/go.opentelemetry.io\/proto\/otlp\/trace\/v1/s|go.opentelemetry.io/proto/otlp/trace/v1|github.com/jaegertracing/jaeger/internal/jptrace|' $(STORAGE_V2_PATH)/*.pb.go
 	@echo "🏗️  remove all remaining OTEL imports because we're not using any other OTLP types"
