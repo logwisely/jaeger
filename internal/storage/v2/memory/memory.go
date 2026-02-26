@@ -7,9 +7,6 @@ import (
 	"context"
 	"errors"
 	"iter"
-	"sort"
-	"strconv"
-	"strings"
 	"sync"
 
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -23,7 +20,6 @@ import (
 )
 
 const errorAttribute = "error"
-const internalAttributePrefix = "@jaeger@"
 
 var errInvalidSearchDepth = errors.New("search depth must be greater than 0 and less than max traces")
 
@@ -99,57 +95,6 @@ func (st *Store) GetServices(ctx context.Context) ([]string, error) {
 		retMe = append(retMe, k)
 	}
 	return retMe, nil
-}
-
-func (st *Store) GetIndexedAttributesNames(
-	ctx context.Context,
-	query tracestore.IndexedAttributesNamesQueryParams,
-) ([]string, error) {
-	if query.Query.Attributes == (pcommon.Map{}) {
-		query.Query.Attributes = pcommon.NewMap()
-	}
-	m := st.getTenant(tenancy.GetTenant(ctx))
-	traceAndIDs, err := m.findTraceAndIds(query.Query)
-	if err != nil {
-		return nil, err
-	}
-	names := collectIndexedAttributeNames(traceAndIDs)
-	sort.Strings(names)
-	if query.Limit > 0 && len(names) > query.Limit {
-		names = names[:query.Limit]
-	}
-	return names, nil
-}
-
-func (st *Store) GetTopKAttributeValues(
-	ctx context.Context,
-	query tracestore.KAttributeValuesQueryParams,
-) ([]string, error) {
-	return st.getKAttributeValues(ctx, query, true)
-}
-
-func (st *Store) GetBottomKAttributeValues(
-	ctx context.Context,
-	query tracestore.KAttributeValuesQueryParams,
-) ([]string, error) {
-	return st.getKAttributeValues(ctx, query, false)
-}
-
-func (st *Store) getKAttributeValues(
-	ctx context.Context,
-	query tracestore.KAttributeValuesQueryParams,
-	desc bool,
-) ([]string, error) {
-	if query.Query.Attributes == (pcommon.Map{}) {
-		query.Query.Attributes = pcommon.NewMap()
-	}
-	m := st.getTenant(tenancy.GetTenant(ctx))
-	traceAndIDs, err := m.findTraceAndIds(query.Query)
-	if err != nil {
-		return nil, err
-	}
-	counts := collectAttributeValueCounts(traceAndIDs, query.AttributeName)
-	return selectKFromCounts(counts, query.K, desc), nil
 }
 
 func (st *Store) FindTraces(ctx context.Context, query tracestore.TraceQueryParams) iter.Seq2[[]ptrace.Traces, error] {
@@ -279,125 +224,4 @@ func getServiceNameFromResource(resource pcommon.Resource) string {
 		return ""
 	}
 	return val.Str()
-}
-
-func collectIndexedAttributeNames(traceAndIDs []traceAndId) []string {
-	set := make(map[string]struct{})
-	for i := range traceAndIDs {
-		rss := traceAndIDs[i].trace.ResourceSpans()
-		for j := 0; j < rss.Len(); j++ {
-			rs := rss.At(j)
-			rs.Resource().Attributes().Range(func(k string, _ pcommon.Value) bool {
-				if strings.HasPrefix(k, internalAttributePrefix) {
-					return true
-				}
-				set[k] = struct{}{}
-				return true
-			})
-			sss := rs.ScopeSpans()
-			for k := 0; k < sss.Len(); k++ {
-				spans := sss.At(k).Spans()
-				for l := 0; l < spans.Len(); l++ {
-					spans.At(l).Attributes().Range(func(key string, _ pcommon.Value) bool {
-						if strings.HasPrefix(key, internalAttributePrefix) {
-							return true
-						}
-						set[key] = struct{}{}
-						return true
-					})
-				}
-			}
-		}
-	}
-	names := make([]string, 0, len(set))
-	for k := range set {
-		names = append(names, k)
-	}
-	return names
-}
-
-func collectAttributeValueCounts(
-	traceAndIDs []traceAndId,
-	attributeName string,
-) map[string]int {
-	counts := make(map[string]int)
-	if attributeName == "" || strings.HasPrefix(attributeName, internalAttributePrefix) {
-		return counts
-	}
-	for i := range traceAndIDs {
-		rss := traceAndIDs[i].trace.ResourceSpans()
-		for j := 0; j < rss.Len(); j++ {
-			rs := rss.At(j)
-			incrementCountsForAttribute(rs.Resource().Attributes(), attributeName, counts)
-			sss := rs.ScopeSpans()
-			for k := 0; k < sss.Len(); k++ {
-				spans := sss.At(k).Spans()
-				for l := 0; l < spans.Len(); l++ {
-					incrementCountsForAttribute(spans.At(l).Attributes(), attributeName, counts)
-				}
-			}
-		}
-	}
-	return counts
-}
-
-func incrementCountsForAttribute(attrs pcommon.Map, attributeName string, counts map[string]int) {
-	v, ok := attrs.Get(attributeName)
-	if !ok {
-		return
-	}
-	value, ok := attributeValueToString(v)
-	if !ok {
-		return
-	}
-	counts[value]++
-}
-
-func attributeValueToString(v pcommon.Value) (string, bool) {
-	switch v.Type() {
-	case pcommon.ValueTypeStr:
-		if v.Str() == "" {
-			return "", false
-		}
-		return v.Str(), true
-	case pcommon.ValueTypeBool:
-		return strconv.FormatBool(v.Bool()), true
-	case pcommon.ValueTypeInt:
-		return strconv.FormatInt(v.Int(), 10), true
-	case pcommon.ValueTypeDouble:
-		return strconv.FormatFloat(v.Double(), 'f', -1, 64), true
-	default:
-		return "", false
-	}
-}
-
-func selectKFromCounts(counts map[string]int, k int, desc bool) []string {
-	type entry struct {
-		value string
-		count int
-	}
-	entries := make([]entry, 0, len(counts))
-	for value, count := range counts {
-		entries = append(entries, entry{value: value, count: count})
-	}
-	sort.Slice(entries, func(i, j int) bool {
-		if entries[i].count == entries[j].count {
-			return entries[i].value < entries[j].value
-		}
-		if desc {
-			return entries[i].count > entries[j].count
-		}
-		return entries[i].count < entries[j].count
-	})
-	if k <= 0 {
-		return nil
-	}
-	if len(entries) > k {
-		entries = entries[:k]
-	}
-	values := make([]string, len(entries))
-	for i := range entries {
-		values[i] = entries[i].value
-	}
-	return values
 }

@@ -38,11 +38,8 @@ func setupHTTPGatewayNoServer(
 	gw := &testGateway{
 		reader: &tracestoremocks.Reader{},
 	}
-	gw.indexedReader = &mockIndexedAttributesReader{
-		Reader: gw.reader,
-	}
 
-	q := querysvc.NewQueryService(gw.indexedReader,
+	q := querysvc.NewQueryService(gw.reader,
 		&dependencystoremocks.Reader{},
 		querysvc.QueryServiceOptions{},
 	)

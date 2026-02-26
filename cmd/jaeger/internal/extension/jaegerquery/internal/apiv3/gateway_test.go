@@ -5,7 +5,6 @@ package apiv3
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"iter"
@@ -39,55 +38,15 @@ const (
 //	REGENERATE_SNAPSHOTS=true go test -v ./cmd/jaeger/internal/extension/jaegerquery/internal/apiv3/...
 var (
 	regenerateSnapshots = os.Getenv("REGENERATE_SNAPSHOTS") == "true"
-	traceID             = pcommon.TraceID(
-		[16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	)
+	traceID             = pcommon.TraceID([16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})
 )
 
 type testGateway struct {
-	reader        *tracestoremocks.Reader
-	indexedReader *mockIndexedAttributesReader
-	url           string
-	router        *http.ServeMux
+	reader *tracestoremocks.Reader
+	url    string
+	router *http.ServeMux
 	// used to set a tenancy header when executing requests
 	setupRequest func(*http.Request)
-}
-
-type mockIndexedAttributesReader struct {
-	tracestore.Reader
-	onGetIndexedAttributesNames func(context.Context, tracestore.IndexedAttributesNamesQueryParams) ([]string, error)
-	onGetTopKAttributeValues    func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
-	onGetBottomKAttributeValues func(context.Context, tracestore.KAttributeValuesQueryParams) ([]string, error)
-}
-
-func (r *mockIndexedAttributesReader) GetIndexedAttributesNames(
-	ctx context.Context,
-	query tracestore.IndexedAttributesNamesQueryParams,
-) ([]string, error) {
-	if r.onGetIndexedAttributesNames == nil {
-		return nil, assert.AnError
-	}
-	return r.onGetIndexedAttributesNames(ctx, query)
-}
-
-func (r *mockIndexedAttributesReader) GetTopKAttributeValues(
-	ctx context.Context,
-	query tracestore.KAttributeValuesQueryParams,
-) ([]string, error) {
-	if r.onGetTopKAttributeValues == nil {
-		return nil, assert.AnError
-	}
-	return r.onGetTopKAttributeValues(ctx, query)
-}
-
-func (r *mockIndexedAttributesReader) GetBottomKAttributeValues(
-	ctx context.Context,
-	query tracestore.KAttributeValuesQueryParams,
-) ([]string, error) {
-	if r.onGetBottomKAttributeValues == nil {
-		return nil, assert.AnError
-	}
-	return r.onGetBottomKAttributeValues(ctx, query)
 }
 
 func (gw *testGateway) execRequest(t *testing.T, url string) ([]byte, int) {
@@ -106,12 +65,7 @@ func (gw *testGateway) execRequest(t *testing.T, url string) ([]byte, int) {
 func (*testGateway) verifySnapshot(t *testing.T, body []byte) []byte {
 	// reformat JSON body with indentation, to make diffing easier
 	var data any
-	require.NoError(
-		t,
-		json.Unmarshal(body, &data),
-		"response: %s",
-		string(body),
-	)
+	require.NoError(t, json.Unmarshal(body, &data), "response: %s", string(body))
 	body, err := json.MarshalIndent(data, "", "  ")
 	require.NoError(t, err)
 
@@ -122,12 +76,7 @@ func (*testGateway) verifySnapshot(t *testing.T, body []byte) []byte {
 	}
 	snapshot, err := os.ReadFile(snapshotFile)
 	require.NoError(t, err)
-	assert.Equal(
-		t,
-		string(snapshot),
-		string(body),
-		"comparing against stored snapshot. Use REGENERATE_SNAPSHOTS=true to rebuild snapshots.",
-	)
+	assert.Equal(t, string(snapshot), string(body), "comparing against stored snapshot. Use REGENERATE_SNAPSHOTS=true to rebuild snapshots.")
 	return body
 }
 
@@ -161,43 +110,10 @@ func runGatewayTests(
 	t.Run("GetOperations", gw.runGatewayGetOperations)
 	t.Run("GetTrace", gw.runGatewayGetTrace)
 	t.Run("FindTraces", gw.runGatewayFindTraces)
-	t.Run("GetIndexedAttributesNames", gw.runGatewayGetIndexedAttributesNames)
-	t.Run("GetTopKAttributeValues", gw.runGatewayGetTopKAttributeValues)
-	t.Run("GetBottomKAttributeValues", gw.runGatewayGetBottomKAttributeValues)
-}
-
-func makeTestTraceWithAttributes() ptrace.Traces {
-	trace := ptrace.NewTraces()
-	resources := trace.ResourceSpans().AppendEmpty()
-	resources.Resource().Attributes().PutStr("resource.attr", "r1")
-	scopes := resources.ScopeSpans().AppendEmpty()
-
-	spanA := scopes.Spans().AppendEmpty()
-	spanA.SetName("span-a")
-	spanA.SetTraceID(traceID)
-	spanA.Attributes().PutStr("http.method", "GET")
-	spanA.Attributes().PutInt("http.status_code", 200)
-
-	spanB := scopes.Spans().AppendEmpty()
-	spanB.SetName("span-b")
-	spanB.SetTraceID(traceID)
-	spanB.Attributes().PutStr("http.method", "GET")
-	spanB.Attributes().PutInt("http.status_code", 200)
-	spanB.Attributes().PutBool("error", true)
-
-	spanC := scopes.Spans().AppendEmpty()
-	spanC.SetName("span-c")
-	spanC.SetTraceID(traceID)
-	spanC.Attributes().PutStr("http.method", "POST")
-	spanC.Attributes().PutInt("http.status_code", 500)
-
-	return trace
 }
 
 func (gw *testGateway) runGatewayGetServices(t *testing.T) {
-	gw.reader.On("GetServices", matchContext).
-		Return([]string{"foo"}, nil).
-		Once()
+	gw.reader.On("GetServices", matchContext).Return([]string{"foo"}, nil).Once()
 
 	body, statusCode := gw.execRequest(t, "/api/v3/services")
 	require.Equal(t, http.StatusOK, statusCode)
@@ -209,19 +125,12 @@ func (gw *testGateway) runGatewayGetServices(t *testing.T) {
 }
 
 func (gw *testGateway) runGatewayGetOperations(t *testing.T) {
-	qp := tracestore.OperationQueryParams{
-		ServiceName: "foo",
-		SpanKind:    "server",
-	}
+	qp := tracestore.OperationQueryParams{ServiceName: "foo", SpanKind: "server"}
 	gw.reader.
 		On("GetOperations", matchContext, qp).
-		Return([]tracestore.Operation{{Name: "get_users", SpanKind: "server"}}, nil).
-		Once()
+		Return([]tracestore.Operation{{Name: "get_users", SpanKind: "server"}}, nil).Once()
 
-	body, statusCode := gw.execRequest(
-		t,
-		"/api/v3/operations?service=foo&span_kind=server",
-	)
+	body, statusCode := gw.execRequest(t, "/api/v3/operations?service=foo&span_kind=server")
 	require.Equal(t, http.StatusOK, statusCode)
 	body = gw.verifySnapshot(t, body)
 
@@ -238,8 +147,7 @@ func (gw *testGateway) runGatewayGetTrace(t *testing.T) {
 		On("GetTraces", matchContext, query).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield([]ptrace.Traces{makeTestTrace()}, nil)
-		})).
-		Once()
+		})).Once()
 	gw.verifyGetTraces(t, "/api/v3/traces/1", traceID)
 }
 
@@ -248,96 +156,11 @@ func (gw *testGateway) runGatewayFindTraces(t *testing.T) {
 	gw.reader.On("FindTraces", matchContext, qp).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield([]ptrace.Traces{makeTestTrace()}, nil)
-		})).
-		Once()
+		})).Once()
 	gw.verifyGetTraces(t, "/api/v3/traces?"+q.Encode(), traceID)
 }
 
-func (gw *testGateway) runGatewayGetIndexedAttributesNames(t *testing.T) {
-	q, qp := mockFindQueries()
-	gw.indexedReader.onGetIndexedAttributesNames = func(
-		_ context.Context,
-		params tracestore.IndexedAttributesNamesQueryParams,
-	) ([]string, error) {
-		assert.Equal(t, qp, params.Query)
-		assert.Equal(t, defaultAttributeNamesLimit, params.Limit)
-		return []string{"error", "http.method", "http.status_code", "resource.attr"}, nil
-	}
-
-	body, statusCode := gw.execRequest(
-		t,
-		"/api/v3/attributes/indexed/names?"+q.Encode(),
-	)
-	require.Equal(t, http.StatusOK, statusCode)
-	body = gw.verifySnapshot(t, body)
-
-	var response api_v3.GetAttributesNamesResponse
-	parseResponse(t, body, &response)
-	// ordering is stable (sorted server-side)
-	assert.Equal(
-		t,
-		[]string{"error", "http.method", "http.status_code", "resource.attr"},
-		response.Names,
-	)
-}
-
-func (gw *testGateway) runGatewayGetTopKAttributeValues(t *testing.T) {
-	q, qp := mockFindQueries()
-	gw.indexedReader.onGetTopKAttributeValues = func(
-		_ context.Context,
-		params tracestore.KAttributeValuesQueryParams,
-	) ([]string, error) {
-		assert.Equal(t, qp, params.Query)
-		assert.Equal(t, "http.method", params.AttributeName)
-		assert.Equal(t, 2, params.K)
-		return []string{"GET", "POST"}, nil
-	}
-
-	q.Set(paramAttributeName, "http.method")
-	q.Set(paramK, "2")
-	body, statusCode := gw.execRequest(
-		t,
-		"/api/v3/attributes/values/topk?"+q.Encode(),
-	)
-	require.Equal(t, http.StatusOK, statusCode)
-	body = gw.verifySnapshot(t, body)
-
-	var response api_v3.GetTopKAttributeValuesResponse
-	parseResponse(t, body, &response)
-	assert.Equal(t, []string{"GET", "POST"}, response.Values)
-}
-
-func (gw *testGateway) runGatewayGetBottomKAttributeValues(t *testing.T) {
-	q, qp := mockFindQueries()
-	gw.indexedReader.onGetBottomKAttributeValues = func(
-		_ context.Context,
-		params tracestore.KAttributeValuesQueryParams,
-	) ([]string, error) {
-		assert.Equal(t, qp, params.Query)
-		assert.Equal(t, "http.method", params.AttributeName)
-		assert.Equal(t, 1, params.K)
-		return []string{"POST"}, nil
-	}
-
-	q.Set(paramAttributeName, "http.method")
-	q.Set(paramK, "1")
-	body, statusCode := gw.execRequest(
-		t,
-		"/api/v3/attributes/values/bottomk?"+q.Encode(),
-	)
-	require.Equal(t, http.StatusOK, statusCode)
-	body = gw.verifySnapshot(t, body)
-
-	var response api_v3.GetBottomKAttributeValuesResponse
-	parseResponse(t, body, &response)
-	assert.Equal(t, []string{"POST"}, response.Values)
-}
-
-func (gw *testGateway) verifyGetTraces(
-	t *testing.T,
-	url string,
-	expectedTraceID pcommon.TraceID,
-) {
+func (gw *testGateway) verifyGetTraces(t *testing.T, url string, expectedTraceID pcommon.TraceID) {
 	body, statusCode := gw.execRequest(t, url)
 	require.Equal(t, http.StatusOK, statusCode, "response=%s", string(body))
 	body = gw.verifySnapshot(t, body)
@@ -346,16 +169,6 @@ func (gw *testGateway) verifyGetTraces(
 	parseResponse(t, body, &response)
 	td := response.Result.ToTraces()
 	assert.Equal(t, 1, td.SpanCount())
-	traceID := td.ResourceSpans().
-		At(0).
-		ScopeSpans().
-		At(0).
-		Spans().
-		At(0).
-		TraceID()
+	traceID := td.ResourceSpans().At(0).ScopeSpans().At(0).Spans().At(0).TraceID()
 	assert.Equal(t, expectedTraceID.String(), traceID.String())
-}
-
-func TestGatewayAPIs(t *testing.T) {
-	runGatewayTests(t, "/", func(_ *http.Request) {})
 }
