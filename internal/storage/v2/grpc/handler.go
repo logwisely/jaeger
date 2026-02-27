@@ -5,15 +5,19 @@ package grpc
 
 import (
 	"context"
+	"errors"
 
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/ptrace/ptraceotlp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/status"
 
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto-gen/storage/v2"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 )
@@ -21,28 +25,33 @@ import (
 var (
 	_ storage.TraceReaderServer      = (*Handler)(nil)
 	_ storage.DependencyReaderServer = (*Handler)(nil)
+	_ storage.AttributesReaderServer = (*Handler)(nil)
 	_ ptraceotlp.GRPCServer          = (*Handler)(nil)
 )
 
 type Handler struct {
 	storage.UnimplementedTraceReaderServer
 	storage.UnimplementedDependencyReaderServer
+	storage.UnimplementedAttributesReaderServer
 	ptraceotlp.UnimplementedGRPCServer
 
 	traceReader tracestore.Reader
 	traceWriter tracestore.Writer
 	depReader   depstore.Reader
+	attrReader  attrstore.Reader
 }
 
 func NewHandler(
 	traceReader tracestore.Reader,
 	traceWriter tracestore.Writer,
 	depReader depstore.Reader,
+	attrReader attrstore.Reader,
 ) *Handler {
 	return &Handler{
 		traceReader: traceReader,
 		traceWriter: traceWriter,
 		depReader:   depReader,
+		attrReader:  attrReader,
 	}
 }
 
@@ -189,9 +198,50 @@ func (h *Handler) GetDependencies(
 	}, nil
 }
 
+func (h *Handler) GetIndexedAttributesNames(
+	ctx context.Context,
+	req *storage.GetIndexedAttributesNamesRequest,
+) (*storage.GetAttributesNamesResponse, error) {
+	if h.attrReader == nil {
+		return nil, status.Error(codes.Unimplemented, "AttributesReader is not configured")
+	}
+	params := attrstore.GetIndexedAttributesNamesParams{
+		WorkspaceID:   req.GetWorkspaceId(),
+		ServiceName:   req.GetServiceName(),
+		OperationName: req.GetOperationName(),
+	}
+	if q := req.GetQuery(); q != nil {
+		params.StartTimeMin = q.GetStartTimeMin()
+		params.StartTimeMax = q.GetStartTimeMax()
+		params.Limit = int(q.GetLimit())
+		if params.WorkspaceID == "" {
+			params.WorkspaceID = q.GetWorkspaceId()
+		}
+		if params.ServiceName == "" {
+			params.ServiceName = q.GetServiceName()
+		}
+		if params.OperationName == "" {
+			params.OperationName = q.GetOperationName()
+		}
+	}
+
+	names, err := h.attrReader.GetIndexedAttributesNames(ctx, params)
+	if errors.Is(err, attrstore.ErrNotSupported) {
+		return nil, status.Error(codes.Unimplemented, err.Error())
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &storage.GetAttributesNamesResponse{Names: names}, nil
+}
+
 func (h *Handler) Register(ss *grpc.Server, hs *health.Server) {
 	storage.RegisterTraceReaderServer(ss, h)
 	storage.RegisterDependencyReaderServer(ss, h)
+	if h.attrReader != nil {
+		storage.RegisterAttributesReaderServer(ss, h)
+		hs.SetServingStatus("jaeger.storage.v2.AttributesReader", grpc_health_v1.HealthCheckResponse_SERVING)
+	}
 	ptraceotlp.RegisterGRPCServer(ss, h)
 
 	hs.SetServingStatus("jaeger.storage.v2.TraceReader", grpc_health_v1.HealthCheckResponse_SERVING)

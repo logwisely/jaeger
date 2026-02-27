@@ -113,7 +113,7 @@ func TestHandler_GetTraces(t *testing.T) {
 					}
 				})).Once()
 
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 			stream := &testStream{
 				sendErr: test.sendErr,
 			}
@@ -169,7 +169,7 @@ func TestHandler_GetServices(t *testing.T) {
 			reader.On("GetServices", mock.Anything).
 				Return(test.services, test.err).Once()
 
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 			resp, err := server.GetServices(context.Background(), &storage.GetServicesRequest{})
 			if test.expectedErr == nil {
 				require.NoError(t, err)
@@ -228,7 +228,7 @@ func TestHandler_GetOperations(t *testing.T) {
 			reader.On("GetOperations", mock.Anything, params).
 				Return(test.operations, test.err).Once()
 
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 			resp, err := server.GetOperations(context.Background(), req)
 			if test.expectedErr == nil {
 				require.NoError(t, err)
@@ -305,7 +305,7 @@ func TestHandler_FindTraces(t *testing.T) {
 					}
 				})).Once()
 
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 			stream := &testStream{
 				sendErr: test.sendErr,
 			}
@@ -388,7 +388,7 @@ func TestHandler_FindTraceIDs(t *testing.T) {
 			Return(iter.Seq2[[]tracestore.FoundTraceID, error](func(yield func([]tracestore.FoundTraceID, error) bool) {
 				yield(test.traceIDs, test.findTraceIDsErr)
 			})).Once()
-		server := NewHandler(reader, writer, depReader)
+		server := NewHandler(reader, writer, depReader, nil)
 
 		response, err := server.FindTraceIDs(context.Background(), &storage.FindTracesRequest{
 			Query: &storage.TraceQueryParameters{
@@ -426,7 +426,7 @@ func TestHandler_Export(t *testing.T) {
 			writer := new(tracestoremocks.Writer)
 			depReader := new(depstoremocks.Reader)
 			writer.On("WriteTraces", mock.Anything, makeTestTrace()).Return(test.writeTracesErr).Once()
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 
 			response, err := server.Export(context.Background(), ptraceotlp.NewExportRequestFromTraces(makeTestTrace()))
 			if test.expectedErr != nil {
@@ -502,7 +502,7 @@ func TestHandler_GetDependencies(t *testing.T) {
 			}).
 				Return(test.dependencies, test.err).Once()
 
-			server := NewHandler(reader, writer, depReader)
+			server := NewHandler(reader, writer, depReader, nil)
 			response, err := server.GetDependencies(context.Background(), &storage.GetDependenciesRequest{
 				StartTime: now,
 				EndTime:   now.Add(time.Minute),

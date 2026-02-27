@@ -16,6 +16,7 @@ import (
 	"github.com/jaegertracing/jaeger/cmd/jaeger/internal/extension/jaegerquery/internal/adjuster"
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/storage/v1/api/spanstore"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 )
@@ -30,6 +31,8 @@ type QueryServiceOptions struct {
 	ArchiveTraceWriter tracestore.Writer
 	// MaxClockSkewAdjust is the maximum duration by which to adjust a span.
 	MaxClockSkewAdjust time.Duration
+	// AttributesReader provides optional attribute metadata (e.g. indexed attribute names).
+	AttributesReader attrstore.Reader
 }
 
 // StorageCapabilities is a feature flag for query service
@@ -43,6 +46,7 @@ type StorageCapabilities struct {
 // QueryService provides methods to query data from the storage.
 type QueryService struct {
 	traceReader      tracestore.Reader
+	attributesReader attrstore.Reader
 	dependencyReader depstore.Reader
 	adjuster         adjuster.Adjuster
 	options          QueryServiceOptions
@@ -72,6 +76,7 @@ func NewQueryService(
 ) *QueryService {
 	qsvc := &QueryService{
 		traceReader:      traceReader,
+		attributesReader: options.AttributesReader,
 		dependencyReader: dependencyReader,
 		adjuster: adjuster.Sequence(
 			adjuster.StandardAdjusters(options.MaxClockSkewAdjust)...,
@@ -80,6 +85,16 @@ func NewQueryService(
 	}
 
 	return qsvc
+}
+
+func (qs QueryService) GetIndexedAttributesNames(
+	ctx context.Context,
+	params attrstore.GetIndexedAttributesNamesParams,
+) ([]string, error) {
+	if qs.attributesReader == nil {
+		return nil, attrstore.ErrNotSupported
+	}
+	return qs.attributesReader.GetIndexedAttributesNames(ctx, params)
 }
 
 // GetTraces retrieves traces with given trace IDs from the primary reader,

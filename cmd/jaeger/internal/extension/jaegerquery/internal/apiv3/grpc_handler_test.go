@@ -21,6 +21,7 @@ import (
 	_ "github.com/jaegertracing/jaeger/internal/gogocodec" // force gogo codec registration
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	dependencystoremocks "github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore/mocks"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	tracestoremocks "github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore/mocks"
@@ -49,7 +50,23 @@ type testServerClient struct {
 	client  api_v3.QueryServiceClient
 }
 
+type stubAttributesReaderGRPC struct {
+	names []string
+	err   error
+}
+
+func (s stubAttributesReaderGRPC) GetIndexedAttributesNames(
+	_ context.Context,
+	_ attrstore.GetIndexedAttributesNamesParams,
+) ([]string, error) {
+	return s.names, s.err
+}
+
 func newTestServerClient(t *testing.T) *testServerClient {
+	return newTestServerClientWithOptions(t, querysvc.QueryServiceOptions{})
+}
+
+func newTestServerClientWithOptions(t *testing.T, opts querysvc.QueryServiceOptions) *testServerClient {
 	tsc := &testServerClient{
 		reader: &tracestoremocks.Reader{},
 	}
@@ -57,7 +74,7 @@ func newTestServerClient(t *testing.T) *testServerClient {
 	q := querysvc.NewQueryService(
 		tsc.reader,
 		&dependencystoremocks.Reader{},
-		querysvc.QueryServiceOptions{},
+		opts,
 	)
 	h := &Handler{
 		QueryService: q,
@@ -73,6 +90,31 @@ func newTestServerClient(t *testing.T) *testServerClient {
 	tsc.client = api_v3.NewQueryServiceClient(conn)
 
 	return tsc
+}
+
+func TestGetIndexedAttributesNamesUnsupported(t *testing.T) {
+	tsc := newTestServerClient(t)
+
+	resp, err := tsc.client.GetIndexedAttributesNames(context.Background(), &api_v3.GetIndexedAttributesNamesRequest{
+		ServiceName: "frontend",
+		Limit:       10,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Empty(t, resp.Names)
+}
+
+func TestGetIndexedAttributesNamesSupported(t *testing.T) {
+	opts := querysvc.QueryServiceOptions{AttributesReader: stubAttributesReaderGRPC{names: []string{"http.method", "http.status_code"}}}
+	tsc := newTestServerClientWithOptions(t, opts)
+
+	resp, err := tsc.client.GetIndexedAttributesNames(context.Background(), &api_v3.GetIndexedAttributesNamesRequest{
+		ServiceName: "frontend",
+		Limit:       10,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+	assert.Equal(t, []string{"http.method", "http.status_code"}, resp.Names)
 }
 
 func TestGetTrace(t *testing.T) {

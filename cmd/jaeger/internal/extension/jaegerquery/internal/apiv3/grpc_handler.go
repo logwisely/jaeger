@@ -17,6 +17,7 @@ import (
 	"github.com/jaegertracing/jaeger/cmd/jaeger/internal/extension/jaegerquery/querysvc"
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/v1adapter"
 )
@@ -132,83 +133,49 @@ func (h *Handler) GetIndexedAttributesNames(
 	ctx context.Context,
 	request *api_v3.GetIndexedAttributesNamesRequest,
 ) (*api_v3.GetAttributesNamesResponse, error) {
-	// workspaceID := request.GetWorkspaceId()
-	// serviceName := request.GetServiceName()
-	// query := request.GetQuery()
+	params := attrstore.GetIndexedAttributesNamesParams{
+		WorkspaceID: request.GetWorkspaceId(),
+		ServiceName: request.GetServiceName(),
+		Limit:       int(request.GetLimit()),
+	}
+	if q := request.GetQuery(); q != nil {
+		params.OperationName = q.GetOperationName()
+		params.StartTimeMin = q.GetStartTimeMin()
+		params.StartTimeMax = q.GetStartTimeMax()
+		// Service name is duplicated between request and query in some clients.
+		if params.ServiceName == "" {
+			params.ServiceName = q.GetServiceName()
+		}
+	}
 
-	// indexedAttributeNames, err := h.QueryService.GetIndexedAttributesNames(ctx, workspaceID, serviceName, query)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return &api_v3.GetAttributesNamesResponse{
-		Names: []string{"http.status_code", "error"},
-	}, nil
+	names, err := h.QueryService.GetIndexedAttributesNames(ctx, params)
+	if errors.Is(err, attrstore.ErrNotSupported) {
+		return &api_v3.GetAttributesNamesResponse{Names: []string{}}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if names == nil {
+		names = []string{}
+	}
+	return &api_v3.GetAttributesNamesResponse{Names: names}, nil
 }
 
 func (h *Handler) GetTopKAttributeValues(
-	ctx context.Context,
-	request *api_v3.GetTopKAttributeValuesRequest,
+	_ context.Context,
+	_ *api_v3.GetTopKAttributeValuesRequest,
 ) (*api_v3.GetTopKAttributeValuesResponse, error) {
-	// workspaceID := request.GetWorkspaceId()
-	// serviceName := request.GetServiceName()
-	// operationName := request.GetOperationName()
-	// attributeName := request.GetAttributeName()
-	k := int(request.GetK())
-	//query := request.GetQuery()
-
-	if k <= 0 {
-		k = 10 // default value
-	}
-
-	// queryParams := querysvc.GetBottomKAttributeValuesParams{
-	// 	WorkspaceID:   workspaceID,
-	// 	ServiceName:   serviceName,
-	// 	OperationName: operationName,
-	// 	AttributeName: attributeName,
-	// 	K:             k,
-	// 	Query:         v1adapter.ToV1AttributesQueryParameters(query),
-	// }
-
-	// values, err := h.QueryService.GetTopKAttributeValues(ctx, queryParams)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
+	_ = h
 	return &api_v3.GetTopKAttributeValuesResponse{
 		Values: []string{"GET"}, // TODO: implement GetTopKAttributeValues in QueryService and return actual values
 	}, nil
 }
 
 func (h *Handler) GetBottomKAttributeValues(
-	ctx context.Context,
-	request *api_v3.GetBottomKAttributeValuesRequest,
+	_ context.Context,
+	_ *api_v3.GetBottomKAttributeValuesRequest,
 ) (*api_v3.GetBottomKAttributeValuesResponse, error) {
-	// workspaceID := request.GetWorkspaceId()
-	// serviceName := request.GetServiceName()
-	// operationName := request.GetOperationName()
-	// attributeName := request.GetAttributeName()
-	k := int(request.GetK())
-	// query := request.GetQuery()
-
-	if k <= 0 {
-		k = 10 // default value
-	}
-
-	// queryParams := querysvc.GetBottomKAttributeValuesParams{
-	// 	WorkspaceID:   workspaceID,
-	// 	ServiceName:   serviceName,
-	// 	OperationName: operationName,
-	// 	AttributeName: attributeName,
-	// 	K:             k,
-	// 	Query:         v1adapter.ToV1AttributesQueryParameters(query),
-	// }
-
-	// values, err := h.QueryService.GetBottomKAttributeValues(ctx, queryParams)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
+	_ = h
 	return &api_v3.GetBottomKAttributeValuesResponse{
 		Values: []string{"GET"}, // TODO: implement GetBottomKAttributeValues in QueryService and return actual values
 	}, nil

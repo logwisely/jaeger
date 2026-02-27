@@ -35,7 +35,17 @@ func TestNewFactory_NonEmptyAuthenticator(t *testing.T) {
 func TestNewFactory(t *testing.T) {
 	lis, err := net.Listen("tcp", ":0")
 	require.NoError(t, err, "failed to listen")
-	t.Cleanup(func() { require.NoError(t, lis.Close()) })
+
+	// Start a gRPC server to ensure the client connections created by NewFactory
+	// can complete dialing and shut down cleanly (avoids goleak flakes).
+	srv := grpc.NewServer()
+	go func() {
+		_ = srv.Serve(lis)
+	}()
+	t.Cleanup(func() {
+		srv.Stop()
+		_ = lis.Close()
+	})
 
 	cfg := Config{
 		ClientConfig: configgrpc.ClientConfig{
@@ -59,11 +69,27 @@ func TestNewFactory(t *testing.T) {
 func TestNewFactory_WriteEndpointOverride(t *testing.T) {
 	readListener, err := net.Listen("tcp", ":0")
 	require.NoError(t, err, "failed to listen")
-	t.Cleanup(func() { require.NoError(t, readListener.Close()) })
+
+	readSrv := grpc.NewServer()
+	go func() {
+		_ = readSrv.Serve(readListener)
+	}()
+	t.Cleanup(func() {
+		readSrv.Stop()
+		_ = readListener.Close()
+	})
 
 	writeListener, err := net.Listen("tcp", ":0")
 	require.NoError(t, err, "failed to listen")
-	t.Cleanup(func() { require.NoError(t, writeListener.Close()) })
+
+	writeSrv := grpc.NewServer()
+	go func() {
+		_ = writeSrv.Serve(writeListener)
+	}()
+	t.Cleanup(func() {
+		writeSrv.Stop()
+		_ = writeListener.Close()
+	})
 
 	cfg := Config{
 		ClientConfig: configgrpc.ClientConfig{
@@ -118,20 +144,17 @@ func TestFactory(t *testing.T) {
 }
 
 func TestInitializeConnections_ClientError(t *testing.T) {
-	f, err := NewFactory(
-		context.Background(),
-		Config{
-			ClientConfig: configgrpc.ClientConfig{
-				Endpoint: ":0",
-			},
-		}, telemetry.NoopSettings())
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, f.Close()) })
+	f := &Factory{
+		config: Config{
+			ClientConfig: configgrpc.ClientConfig{Endpoint: ":0"},
+		},
+		telset: telemetry.NoopSettings(),
+	}
 	newClientFn := func(_ component.TelemetrySettings, _ *configgrpc.ClientConfig, _ ...grpc.DialOption) (conn *grpc.ClientConn, err error) {
 		return nil, assert.AnError
 	}
 	noopTelset := telemetry.NoopSettings().ToOtelComponent()
-	err = f.initializeConnections(
+	err := f.initializeConnections(
 		noopTelset,
 		noopTelset,
 		&configgrpc.ClientConfig{},

@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/jaegertracing/jaeger/internal/auth/bearertoken"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	grpcstorage "github.com/jaegertracing/jaeger/internal/storage/v2/grpc"
@@ -58,11 +59,19 @@ func NewServer(
 		return nil, err
 	}
 
+	var attrReader attrstore.Reader
+	if af, ok := ts.(attrstore.Factory); ok {
+		attrReader, err = af.CreateAttributesReader()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// This is required because we are using the config to start the server.
 	// If the config is created manually (e.g. in tests), the transport might not be set.
 	grpcCfg.NetAddr.Transport = confignet.TransportTypeTCP
 
-	v2Handler := grpcstorage.NewHandler(reader, writer, depReader)
+	v2Handler := grpcstorage.NewHandler(reader, writer, depReader, attrReader)
 
 	grpcServer, err := createGRPCServer(ctx, grpcCfg, tm, v2Handler, telset)
 	if err != nil {

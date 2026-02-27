@@ -25,6 +25,7 @@ import (
 	"github.com/jaegertracing/jaeger/internal/jptrace"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
 	"github.com/jaegertracing/jaeger/internal/storage/v1/api/spanstore"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/v1adapter"
 )
@@ -162,21 +163,63 @@ func (h *HTTPGateway) getIndexedAttributesNames(
 	r *http.Request,
 ) {
 	query := r.URL.Query()
-	req := &api_v3.GetIndexedAttributesNamesRequest{
-		ServiceName: query.Get("service"),
+	serviceName := query.Get("service")
+	if serviceName == "" {
+		serviceName = query.Get("service_name")
 	}
-	h.Logger.Info("getIndexedAttributesNames called with query",
-		zap.String("ServiceName", req.ServiceName))
 
-	resp := &api_v3.GetAttributesNamesResponse{
-		Names: []string{"http.method", "http.status_code"},
+	params := attrstore.GetIndexedAttributesNamesParams{
+		WorkspaceID: query.Get("workspace_id"),
+		ServiceName: serviceName,
 	}
-	h.marshalResponse(resp, w)
+	if l := query.Get("limit"); l != "" {
+		limit, err := strconv.Atoi(l)
+		if h.tryParamError(w, err, "limit") {
+			return
+		}
+		params.Limit = limit
+	}
+	if op := query.Get("operation_name"); op != "" {
+		params.OperationName = op
+	}
+	if ts := query.Get(paramTimeMin); ts != "" {
+		timeParsed, err := time.Parse(time.RFC3339Nano, ts)
+		if h.tryParamError(w, err, paramTimeMin) {
+			return
+		}
+		params.StartTimeMin = timeParsed
+	}
+	if ts := query.Get(paramTimeMax); ts != "" {
+		timeParsed, err := time.Parse(time.RFC3339Nano, ts)
+		if h.tryParamError(w, err, paramTimeMax) {
+			return
+		}
+		params.StartTimeMax = timeParsed
+	}
+
+	h.Logger.Info("getIndexedAttributesNames called with query",
+		zap.String("ServiceName", params.ServiceName),
+		zap.String("OperationName", params.OperationName),
+		zap.Int("Limit", params.Limit),
+	)
+
+	names, err := h.QueryService.GetIndexedAttributesNames(r.Context(), params)
+	if errors.Is(err, attrstore.ErrNotSupported) {
+		names = []string{}
+		err = nil
+	}
+	if h.tryHandleError(w, err, http.StatusInternalServerError) {
+		return
+	}
+	if names == nil {
+		names = []string{}
+	}
+	h.marshalResponse(&api_v3.GetAttributesNamesResponse{Names: names}, w)
 }
 
 func (h *HTTPGateway) getTopKAttributeValues(
 	w http.ResponseWriter,
-	r *http.Request,
+	_ *http.Request,
 ) {
 	ret := &api_v3.GetTopKAttributeValuesResponse{
 		Values: []string{"GET"},
@@ -186,7 +229,7 @@ func (h *HTTPGateway) getTopKAttributeValues(
 
 func (h *HTTPGateway) getBottomKAttributeValues(
 	w http.ResponseWriter,
-	r *http.Request,
+	_ *http.Request,
 ) {
 	ret := &api_v3.GetBottomKAttributeValuesResponse{Values: []string{"POST"}}
 	h.marshalResponse(ret, w)

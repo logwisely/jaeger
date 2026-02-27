@@ -22,6 +22,8 @@ func TestNewFactory(t *testing.T) {
 	require.NoError(t, err)
 	_, err = f.CreateDependencyReader()
 	require.NoError(t, err)
+	_, err = f.CreateAttributesReader()
+	require.NoError(t, err)
 	_, err = f.CreateSamplingStore(5)
 	require.NoError(t, err)
 	_, err = f.CreateLock()

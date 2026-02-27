@@ -22,6 +22,7 @@ import (
 	"github.com/jaegertracing/jaeger/internal/metrics"
 	"github.com/jaegertracing/jaeger/internal/storage/metricstore/disabled"
 	"github.com/jaegertracing/jaeger/internal/storage/v1/api/metricstore"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	"github.com/jaegertracing/jaeger/internal/telemetry"
@@ -103,6 +104,13 @@ func (s *server) Start(ctx context.Context, host component.Host) error {
 
 	opts := querysvc.QueryServiceOptions{
 		MaxClockSkewAdjust: s.config.MaxClockSkewAdjust,
+	}
+	if af, ok := tf.(attrstore.Factory); ok {
+		attrReader, err := af.CreateAttributesReader()
+		if err != nil {
+			return fmt.Errorf("cannot create attributes reader: %w", err)
+		}
+		opts.AttributesReader = attrReader
 	}
 	if err := s.addArchiveStorage(&opts, host); err != nil {
 		return err

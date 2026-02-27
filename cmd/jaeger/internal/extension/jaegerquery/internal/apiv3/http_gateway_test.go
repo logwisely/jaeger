@@ -4,6 +4,7 @@
 package apiv3
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"iter"
@@ -25,11 +26,26 @@ import (
 	"github.com/jaegertracing/jaeger/cmd/jaeger/internal/extension/jaegerquery/querysvc"
 	"github.com/jaegertracing/jaeger/internal/proto/api_v3"
 	"github.com/jaegertracing/jaeger/internal/storage/v1/api/spanstore"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	dependencystoremocks "github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore/mocks"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	tracestoremocks "github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore/mocks"
 	"github.com/jaegertracing/jaeger/internal/testutils"
 )
+
+type stubAttributesReaderHTTP struct {
+	names []string
+	err   error
+	seen  []attrstore.GetIndexedAttributesNamesParams
+}
+
+func (s *stubAttributesReaderHTTP) GetIndexedAttributesNames(
+	_ context.Context,
+	params attrstore.GetIndexedAttributesNamesParams,
+) ([]string, error) {
+	s.seen = append(s.seen, params)
+	return s.names, s.err
+}
 
 func setupHTTPGatewayNoServer(
 	_ *testing.T,
@@ -42,6 +58,31 @@ func setupHTTPGatewayNoServer(
 	q := querysvc.NewQueryService(gw.reader,
 		&dependencystoremocks.Reader{},
 		querysvc.QueryServiceOptions{},
+	)
+
+	hgw := &HTTPGateway{
+		QueryService: q,
+		Logger:       zap.NewNop(),
+		Tracer:       nooptrace.NewTracerProvider(),
+		BasePath:     basePath,
+	}
+
+	gw.router = http.NewServeMux()
+	hgw.RegisterRoutes(gw.router)
+	return gw
+}
+
+func setupHTTPGatewayNoServerWithAttrReader(
+	_ *testing.T,
+	basePath string,
+	attrReader attrstore.Reader,
+) *testGateway {
+	gw := &testGateway{reader: &tracestoremocks.Reader{}}
+
+	q := querysvc.NewQueryService(
+		gw.reader,
+		&dependencystoremocks.Reader{},
+		querysvc.QueryServiceOptions{AttributesReader: attrReader},
 	)
 
 	hgw := &HTTPGateway{
@@ -147,6 +188,38 @@ func TestHTTPGatewayGetTrace(t *testing.T) {
 			gw.reader.AssertCalled(t, "GetTraces", matchContext, []tracestore.GetTraceParams{tc.expectedQuery})
 		})
 	}
+}
+
+func TestHTTPGatewayGetIndexedAttributesNamesSupported(t *testing.T) {
+	attrReader := &stubAttributesReaderHTTP{names: []string{"http.method", "http.status_code"}}
+	gw := setupHTTPGatewayNoServerWithAttrReader(t, "", attrReader)
+
+	r, err := http.NewRequest(http.MethodGet, "/api/v3/attributes/indexed/names?service=frontend&limit=5", http.NoBody)
+	require.NoError(t, err)
+	w := httptest.NewRecorder()
+	gw.router.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+
+	var response api_v3.GetAttributesNamesResponse
+	require.NoError(t, jsonpb.Unmarshal(w.Body, &response))
+	assert.Equal(t, []string{"http.method", "http.status_code"}, response.Names)
+	require.Len(t, attrReader.seen, 1)
+	assert.Equal(t, "frontend", attrReader.seen[0].ServiceName)
+	assert.Equal(t, 5, attrReader.seen[0].Limit)
+}
+
+func TestHTTPGatewayGetIndexedAttributesNamesUnsupported(t *testing.T) {
+	gw := setupHTTPGatewayNoServer(t, "")
+
+	r, err := http.NewRequest(http.MethodGet, "/api/v3/attributes/indexed/names", http.NoBody)
+	require.NoError(t, err)
+	w := httptest.NewRecorder()
+	gw.router.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+
+	var response api_v3.GetAttributesNamesResponse
+	require.NoError(t, jsonpb.Unmarshal(w.Body, &response))
+	assert.Empty(t, response.Names)
 }
 
 func TestHTTPGatewayGetTraceEmptyResponse(t *testing.T) {
