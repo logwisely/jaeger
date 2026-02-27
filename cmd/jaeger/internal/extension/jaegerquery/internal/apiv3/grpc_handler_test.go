@@ -66,7 +66,10 @@ func newTestServerClient(t *testing.T) *testServerClient {
 	return newTestServerClientWithOptions(t, querysvc.QueryServiceOptions{})
 }
 
-func newTestServerClientWithOptions(t *testing.T, opts querysvc.QueryServiceOptions) *testServerClient {
+func newTestServerClientWithOptions(
+	t *testing.T,
+	opts querysvc.QueryServiceOptions,
+) *testServerClient {
 	tsc := &testServerClient{
 		reader: &tracestoremocks.Reader{},
 	}
@@ -95,23 +98,33 @@ func newTestServerClientWithOptions(t *testing.T, opts querysvc.QueryServiceOpti
 func TestGetIndexedAttributesNamesUnsupported(t *testing.T) {
 	tsc := newTestServerClient(t)
 
-	resp, err := tsc.client.GetIndexedAttributesNames(context.Background(), &api_v3.GetIndexedAttributesNamesRequest{
-		ServiceName: "frontend",
-		Limit:       10,
-	})
+	resp, err := tsc.client.GetIndexedAttributesNames(
+		context.Background(),
+		&api_v3.GetIndexedAttributesNamesRequest{
+			ServiceName: "frontend",
+			Limit:       10,
+		},
+	)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Empty(t, resp.Names)
 }
 
 func TestGetIndexedAttributesNamesSupported(t *testing.T) {
-	opts := querysvc.QueryServiceOptions{AttributesReader: stubAttributesReaderGRPC{names: []string{"http.method", "http.status_code"}}}
+	opts := querysvc.QueryServiceOptions{
+		AttributesReader: stubAttributesReaderGRPC{
+			names: []string{"http.method", "http.status_code"},
+		},
+	}
 	tsc := newTestServerClientWithOptions(t, opts)
 
-	resp, err := tsc.client.GetIndexedAttributesNames(context.Background(), &api_v3.GetIndexedAttributesNamesRequest{
-		ServiceName: "frontend",
-		Limit:       10,
-	})
+	resp, err := tsc.client.GetIndexedAttributesNames(
+		context.Background(),
+		&api_v3.GetIndexedAttributesNamesRequest{
+			ServiceName: "frontend",
+			Limit:       10,
+		},
+	)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, []string{"http.method", "http.status_code"}, resp.Names)
@@ -153,16 +166,29 @@ func TestGetTrace(t *testing.T) {
 			tsc.reader.On("GetTraces", matchContext, []tracestore.GetTraceParams{tc.expectedQuery}).
 				Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 					yield([]ptrace.Traces{makeTestTrace()}, nil)
-				})).Once()
+				})).
+				Once()
 
-			getTraceStream, err := tsc.client.GetTrace(context.Background(), &tc.request)
+			getTraceStream, err := tsc.client.GetTrace(
+				context.Background(),
+				&tc.request,
+			)
 			require.NoError(t, err)
 			recv, err := getTraceStream.Recv()
 			require.NoError(t, err)
 			td := recv.ToTraces()
 			require.Equal(t, 1, td.SpanCount())
-			assert.Equal(t, "foobar",
-				td.ResourceSpans().At(0).ScopeSpans().At(0).Spans().At(0).Name())
+			assert.Equal(
+				t,
+				"foobar",
+				td.ResourceSpans().
+					At(0).
+					ScopeSpans().
+					At(0).
+					Spans().
+					At(0).
+					Name(),
+			)
 		})
 	}
 }
@@ -172,11 +198,15 @@ func TestGetTraceStorageError(t *testing.T) {
 	tsc.reader.On("GetTraces", matchContext, []tracestore.GetTraceParams{{TraceID: traceID}}).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield(nil, assert.AnError)
-		})).Once()
+		})).
+		Once()
 
-	getTraceStream, err := tsc.client.GetTrace(context.Background(), &api_v3.GetTraceRequest{
-		TraceId: "1",
-	})
+	getTraceStream, err := tsc.client.GetTrace(
+		context.Background(),
+		&api_v3.GetTraceRequest{
+			TraceId: "1",
+		},
+	)
 	require.NoError(t, err)
 	recv, err := getTraceStream.Recv()
 	require.ErrorContains(t, err, assert.AnError.Error())
@@ -188,13 +218,17 @@ func TestGetTraceTraceIDError(t *testing.T) {
 	tsc.reader.On("GetTraces", matchContext, mock.AnythingOfType("tracestore.GetTraceParams")).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield([]ptrace.Traces{}, nil)
-		})).Once()
+		})).
+		Once()
 
-	getTraceStream, err := tsc.client.GetTrace(context.Background(), &api_v3.GetTraceRequest{
-		TraceId:   "Z",
-		StartTime: time.Now().Add(-2 * time.Hour),
-		EndTime:   time.Now(),
-	})
+	getTraceStream, err := tsc.client.GetTrace(
+		context.Background(),
+		&api_v3.GetTraceRequest{
+			TraceId:   "Z",
+			StartTime: time.Now().Add(-2 * time.Hour),
+			EndTime:   time.Now(),
+		},
+	)
 	require.NoError(t, err)
 	recv, err := getTraceStream.Recv()
 	require.ErrorContains(t, err, "strconv.ParseUint:")
@@ -206,20 +240,24 @@ func TestFindTraces(t *testing.T) {
 	tsc.reader.On("FindTraces", matchContext, mock.AnythingOfType("tracestore.TraceQueryParams")).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield([]ptrace.Traces{makeTestTrace()}, nil)
-		})).Once()
+		})).
+		Once()
 
-	responseStream, err := tsc.client.FindTraces(context.Background(), &api_v3.FindTracesRequest{
-		Query: &api_v3.TraceQueryParameters{
-			ServiceName:   "myservice",
-			OperationName: "foobar",
-			Attributes:    map[string]string{"foo": "bar"},
-			StartTimeMin:  time.Now().Add(-2 * time.Hour),
-			StartTimeMax:  time.Now(),
-			DurationMin:   1 * time.Second,
-			DurationMax:   2 * time.Second,
-			SearchDepth:   10,
+	responseStream, err := tsc.client.FindTraces(
+		context.Background(),
+		&api_v3.FindTracesRequest{
+			Query: &api_v3.TraceQueryParameters{
+				ServiceName:   "myservice",
+				OperationName: "foobar",
+				Attributes:    map[string]string{"foo": "bar"},
+				StartTimeMin:  time.Now().Add(-2 * time.Hour),
+				StartTimeMax:  time.Now(),
+				DurationMin:   1 * time.Second,
+				DurationMax:   2 * time.Second,
+				SearchDepth:   10,
+			},
 		},
-	})
+	)
 	require.NoError(t, err)
 	recv, err := responseStream.Recv()
 	require.NoError(t, err)
@@ -232,7 +270,8 @@ func TestFindTracesSendError(t *testing.T) {
 	reader.On("FindTraces", mock.Anything, mock.AnythingOfType("tracestore.TraceQueryParams")).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield([]ptrace.Traces{makeTestTrace()}, nil)
-		})).Once()
+		})).
+		Once()
 	h := &Handler{
 		QueryService: querysvc.NewQueryService(
 			reader,
@@ -257,18 +296,28 @@ func TestFindTracesSendError(t *testing.T) {
 
 func TestFindTracesQueryNil(t *testing.T) {
 	tsc := newTestServerClient(t)
-	responseStream, err := tsc.client.FindTraces(context.Background(), &api_v3.FindTracesRequest{})
+	responseStream, err := tsc.client.FindTraces(
+		context.Background(),
+		&api_v3.FindTracesRequest{},
+	)
 	require.NoError(t, err)
 	recv, err := responseStream.Recv()
 	require.ErrorContains(t, err, "missing query")
 	assert.Nil(t, recv)
 
-	responseStream, err = tsc.client.FindTraces(context.Background(), &api_v3.FindTracesRequest{
-		Query: &api_v3.TraceQueryParameters{},
-	})
+	responseStream, err = tsc.client.FindTraces(
+		context.Background(),
+		&api_v3.FindTracesRequest{
+			Query: &api_v3.TraceQueryParameters{},
+		},
+	)
 	require.NoError(t, err)
 	recv, err = responseStream.Recv()
-	require.ErrorContains(t, err, "start time min and max are required parameters")
+	require.ErrorContains(
+		t,
+		err,
+		"start time min and max are required parameters",
+	)
 	assert.Nil(t, recv)
 }
 
@@ -277,14 +326,18 @@ func TestFindTracesStorageError(t *testing.T) {
 	tsc.reader.On("FindTraces", matchContext, mock.AnythingOfType("tracestore.TraceQueryParams")).
 		Return(iter.Seq2[[]ptrace.Traces, error](func(yield func([]ptrace.Traces, error) bool) {
 			yield(nil, assert.AnError)
-		})).Once()
+		})).
+		Once()
 
-	responseStream, err := tsc.client.FindTraces(context.Background(), &api_v3.FindTracesRequest{
-		Query: &api_v3.TraceQueryParameters{
-			StartTimeMin: time.Now().Add(-2 * time.Hour),
-			StartTimeMax: time.Now(),
+	responseStream, err := tsc.client.FindTraces(
+		context.Background(),
+		&api_v3.FindTracesRequest{
+			Query: &api_v3.TraceQueryParameters{
+				StartTimeMin: time.Now().Add(-2 * time.Hour),
+				StartTimeMax: time.Now(),
+			},
 		},
-	})
+	)
 	require.NoError(t, err)
 	recv, err := responseStream.Recv()
 	require.ErrorContains(t, err, assert.AnError.Error())
@@ -296,7 +349,10 @@ func TestGetServices(t *testing.T) {
 	tsc.reader.On("GetServices", matchContext).Return(
 		[]string{"foo"}, nil).Once()
 
-	response, err := tsc.client.GetServices(context.Background(), &api_v3.GetServicesRequest{})
+	response, err := tsc.client.GetServices(
+		context.Background(),
+		&api_v3.GetServicesRequest{},
+	)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"foo"}, response.GetServices())
 }
@@ -306,21 +362,29 @@ func TestGetServicesStorageError(t *testing.T) {
 	tsc.reader.On("GetServices", matchContext).Return(
 		nil, assert.AnError).Once()
 
-	response, err := tsc.client.GetServices(context.Background(), &api_v3.GetServicesRequest{})
+	response, err := tsc.client.GetServices(
+		context.Background(),
+		&api_v3.GetServicesRequest{},
+	)
 	require.ErrorContains(t, err, assert.AnError.Error())
 	assert.Nil(t, response)
 }
 
 func TestGetOperations(t *testing.T) {
 	tsc := newTestServerClient(t)
-	tsc.reader.On("GetOperations", matchContext, mock.AnythingOfType("tracestore.OperationQueryParams")).Return(
-		[]tracestore.Operation{
-			{
-				Name: "get_users",
-			},
-		}, nil).Once()
+	tsc.reader.On("GetOperations", matchContext, mock.AnythingOfType("tracestore.OperationQueryParams")).
+		Return(
+			[]tracestore.Operation{
+				{
+					Name: "get_users",
+				},
+			}, nil).
+		Once()
 
-	response, err := tsc.client.GetOperations(context.Background(), &api_v3.GetOperationsRequest{})
+	response, err := tsc.client.GetOperations(
+		context.Background(),
+		&api_v3.GetOperationsRequest{},
+	)
 	require.NoError(t, err)
 	assert.Equal(t, []*api_v3.Operation{
 		{
@@ -331,10 +395,15 @@ func TestGetOperations(t *testing.T) {
 
 func TestGetOperationsStorageError(t *testing.T) {
 	tsc := newTestServerClient(t)
-	tsc.reader.On("GetOperations", matchContext, mock.AnythingOfType("tracestore.OperationQueryParams")).Return(
-		nil, assert.AnError).Once()
+	tsc.reader.On("GetOperations", matchContext, mock.AnythingOfType("tracestore.OperationQueryParams")).
+		Return(
+			nil, assert.AnError).
+		Once()
 
-	response, err := tsc.client.GetOperations(context.Background(), &api_v3.GetOperationsRequest{})
+	response, err := tsc.client.GetOperations(
+		context.Background(),
+		&api_v3.GetOperationsRequest{},
+	)
 	require.ErrorContains(t, err, assert.AnError.Error())
 	assert.Nil(t, response)
 }

@@ -16,6 +16,12 @@ import (
 
 var _ attrstore.Reader = (*Store)(nil)
 
+func (st *Store) GetTopKAttributeValues(
+	ctx context.Context,
+	params attrstore.GetTopKAttributeValuesParams) ([]string, error) {
+	return nil, attrstore.ErrNotSupported
+}
+
 func (st *Store) GetIndexedAttributesNames(ctx context.Context, params attrstore.GetIndexedAttributesNamesParams) ([]string, error) {
 	tenant := st.getTenant(tenancy.GetTenant(ctx))
 	tenant.mu.RLock()

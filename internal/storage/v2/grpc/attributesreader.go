@@ -26,6 +26,38 @@ func NewAttributesReader(conn *grpc.ClientConn) *AttributesReader {
 	return &AttributesReader{client: storage.NewAttributesReaderClient(conn)}
 }
 
+func (ar *AttributesReader) GetTopKAttributeValues(
+	ctx context.Context,
+	params attrstore.GetTopKAttributeValuesParams,
+) ([]string, error) {
+	req := &storage.GetTopKAttributeValuesRequest{
+		WorkspaceId:   params.WorkspaceId,
+		ServiceName:   params.ServiceName,
+		OperationName: params.OperationName,
+		AttributeName: params.AttributeName,
+		K:             int32(params.K), //nolint:gosec // G115
+	}
+
+	resp, err := ar.client.GetTopKAttributeValues(ctx, req)
+	if err != nil {
+		if status.Code(err) == codes.Unimplemented {
+			return nil, attrstore.ErrNotSupported
+		}
+		return nil, fmt.Errorf("failed to execute GetTopKAttributeValues: %w", err)
+	}
+	if resp == nil {
+		return []string{}, nil
+	}
+	// Defensive: treat nil slice as empty.
+	if resp.Values == nil {
+		return []string{}, nil
+	}
+	// Ensure we don't leak internal slice for callers that may append.
+	values := make([]string, len(resp.Values))
+	copy(values, resp.Values)
+	return values, nil
+}
+
 func (ar *AttributesReader) GetIndexedAttributesNames(
 	ctx context.Context,
 	params attrstore.GetIndexedAttributesNamesParams,

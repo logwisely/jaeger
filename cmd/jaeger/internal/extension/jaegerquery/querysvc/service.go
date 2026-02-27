@@ -21,7 +21,9 @@ import (
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 )
 
-var errNoArchiveSpanStorage = errors.New("archive span storage was not configured")
+var errNoArchiveSpanStorage = errors.New(
+	"archive span storage was not configured",
+)
 
 // QueryServiceOptions holds the configuration options for the query service.
 type QueryServiceOptions struct {
@@ -97,6 +99,16 @@ func (qs QueryService) GetIndexedAttributesNames(
 	return qs.attributesReader.GetIndexedAttributesNames(ctx, params)
 }
 
+func (qs QueryService) GetTopKAttributeValues(
+	ctx context.Context,
+	params attrstore.GetTopKAttributeValuesParams,
+) ([]string, error) {
+	if qs.attributesReader == nil {
+		return nil, attrstore.ErrNotSupported
+	}
+	return qs.attributesReader.GetTopKAttributeValues(ctx, params)
+}
+
 // GetTraces retrieves traces with given trace IDs from the primary reader,
 // and if any of them are not found it then queries the archive reader.
 // The iterator is single-use: once consumed, it cannot be used again.
@@ -117,7 +129,11 @@ func (qs QueryService) GetTraces(
 ) iter.Seq2[[]ptrace.Traces, error] {
 	getTracesIter := qs.traceReader.GetTraces(ctx, params.TraceIDs...)
 	return func(yield func([]ptrace.Traces, error) bool) {
-		foundTraceIDs, proceed := qs.receiveTraces(getTracesIter, yield, params.RawTraces)
+		foundTraceIDs, proceed := qs.receiveTraces(
+			getTracesIter,
+			yield,
+			params.RawTraces,
+		)
 		if proceed && qs.options.ArchiveTraceReader != nil {
 			var missingTraceIDs []tracestore.GetTraceParams
 			for _, id := range params.TraceIDs {
@@ -126,7 +142,9 @@ func (qs QueryService) GetTraces(
 				}
 			}
 			if len(missingTraceIDs) > 0 {
-				getArchiveTracesIter := qs.options.ArchiveTraceReader.GetTraces(ctx, missingTraceIDs...)
+				getArchiveTracesIter := qs.options.ArchiveTraceReader.GetTraces(
+					ctx,
+					missingTraceIDs...)
 				qs.receiveTraces(getArchiveTracesIter, yield, params.RawTraces)
 			}
 		}
@@ -172,7 +190,10 @@ func (qs QueryService) FindTraces(
 // ArchiveTrace archives a trace specified by the given query parameters.
 // If the ArchiveTraceWriter is not configured, it returns
 // an error indicating that there is no archive span storage available.
-func (qs QueryService) ArchiveTrace(ctx context.Context, query tracestore.GetTraceParams) error {
+func (qs QueryService) ArchiveTrace(
+	ctx context.Context,
+	query tracestore.GetTraceParams,
+) error {
 	if qs.options.ArchiveTraceWriter == nil {
 		return errNoArchiveSpanStorage
 	}
@@ -203,7 +224,11 @@ func (qs QueryService) ArchiveTrace(ctx context.Context, query tracestore.GetTra
 	return archiveErr
 }
 
-func (qs QueryService) GetDependencies(ctx context.Context, endTs time.Time, lookback time.Duration) ([]model.DependencyLink, error) {
+func (qs QueryService) GetDependencies(
+	ctx context.Context,
+	endTs time.Time,
+	lookback time.Duration,
+) ([]model.DependencyLink, error) {
 	return qs.dependencyReader.GetDependencies(ctx, depstore.QueryParameters{
 		StartTime: endTs.Add(-lookback),
 		EndTime:   endTs,
@@ -237,10 +262,14 @@ func (qs QueryService) receiveTraces(
 			if !rawTraces {
 				qs.adjuster.Adjust(trace)
 			}
-			jptrace.SpanIter(trace)(func(_ jptrace.SpanIterPos, span ptrace.Span) bool {
-				foundTraceIDs[span.TraceID()] = struct{}{}
-				return true
-			})
+			jptrace.SpanIter(
+				trace,
+			)(
+				func(_ jptrace.SpanIterPos, span ptrace.Span) bool {
+					foundTraceIDs[span.TraceID()] = struct{}{}
+					return true
+				},
+			)
 		}
 		proceed = yield(traces, nil)
 		return proceed
