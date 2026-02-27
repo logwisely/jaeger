@@ -10,6 +10,7 @@ import (
 	"github.com/jaegertracing/jaeger/internal/metrics"
 	"github.com/jaegertracing/jaeger/internal/storage/v1"
 	"github.com/jaegertracing/jaeger/internal/storage/v1/api/samplingstore"
+	"github.com/jaegertracing/jaeger/internal/storage/v2/api/attrstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/depstore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore"
 	"github.com/jaegertracing/jaeger/internal/storage/v2/api/tracestore/tracestoremetrics"
@@ -18,6 +19,7 @@ import (
 
 var (
 	_ tracestore.Factory           = (*Factory)(nil)
+	_ attrstore.Factory            = (*Factory)(nil)
 	_ storage.SamplingStoreFactory = (*Factory)(nil)
 	_ storage.Purger               = (*Factory)(nil)
 )
@@ -47,6 +49,10 @@ func (f *Factory) CreateTraceWriter() (tracestore.Writer, error) {
 }
 
 func (f *Factory) CreateDependencyReader() (depstore.Reader, error) {
+	return f.store, nil
+}
+
+func (f *Factory) CreateAttributesReader() (attrstore.Reader, error) {
 	return f.store, nil
 }
 
