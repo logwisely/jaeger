@@ -31,7 +31,10 @@ type Handler struct {
 var _ api_v3.QueryServiceServer = (*Handler)(nil)
 
 // GetTrace implements api_v3.QueryServiceServer's GetTrace
-func (h *Handler) GetTrace(request *api_v3.GetTraceRequest, stream api_v3.QueryService_GetTraceServer) error {
+func (h *Handler) GetTrace(
+	request *api_v3.GetTraceRequest,
+	stream api_v3.QueryService_GetTraceServer,
+) error {
 	traceID, err := model.TraceIDFromString(request.GetTraceId())
 	if err != nil {
 		return fmt.Errorf("malform trace ID: %w", err)
@@ -52,7 +55,10 @@ func (h *Handler) GetTrace(request *api_v3.GetTraceRequest, stream api_v3.QueryS
 }
 
 // FindTraces implements api_v3.QueryServiceServer's FindTraces
-func (h *Handler) FindTraces(request *api_v3.FindTracesRequest, stream api_v3.QueryService_FindTracesServer) error {
+func (h *Handler) FindTraces(
+	request *api_v3.FindTracesRequest,
+	stream api_v3.QueryService_FindTracesServer,
+) error {
 	return h.internalFindTraces(stream.Context(), request, stream.Send)
 }
 
@@ -98,7 +104,10 @@ func (h *Handler) internalFindTraces(
 }
 
 // GetServices implements api_v3.QueryServiceServer's GetServices
-func (h *Handler) GetServices(ctx context.Context, _ *api_v3.GetServicesRequest) (*api_v3.GetServicesResponse, error) {
+func (h *Handler) GetServices(
+	ctx context.Context,
+	_ *api_v3.GetServicesRequest,
+) (*api_v3.GetServicesResponse, error) {
 	services, err := h.QueryService.GetServices(ctx)
 	if err != nil {
 		return nil, err
@@ -109,11 +118,17 @@ func (h *Handler) GetServices(ctx context.Context, _ *api_v3.GetServicesRequest)
 }
 
 // GetOperations implements api_v3.QueryService's GetOperations
-func (h *Handler) GetOperations(ctx context.Context, request *api_v3.GetOperationsRequest) (*api_v3.GetOperationsResponse, error) {
-	operations, err := h.QueryService.GetOperations(ctx, tracestore.OperationQueryParams{
-		ServiceName: request.GetService(),
-		SpanKind:    request.GetSpanKind(),
-	})
+func (h *Handler) GetOperations(
+	ctx context.Context,
+	request *api_v3.GetOperationsRequest,
+) (*api_v3.GetOperationsResponse, error) {
+	operations, err := h.QueryService.GetOperations(
+		ctx,
+		tracestore.OperationQueryParams{
+			ServiceName: request.GetService(),
+			SpanKind:    request.GetSpanKind(),
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -162,22 +177,29 @@ func (h *Handler) GetIndexedAttributesNames(
 }
 
 func (h *Handler) GetTopKAttributeValues(
-	_ context.Context,
-	_ *api_v3.GetTopKAttributeValuesRequest,
+	ctx context.Context,
+	request *api_v3.GetTopKAttributeValuesRequest,
 ) (*api_v3.GetTopKAttributeValuesResponse, error) {
-	_ = h
+	params := attrstore.GetTopKAttributeValuesParams{
+		WorkspaceId: request.GetWorkspaceId(),
+		ServiceName: request.GetServiceName(),
+		K:           int(request.GetK()),
+	}
+	if q := request.GetQuery(); q != nil {
+		params.OperationName = q.GetOperationName()
+		params.StartTimeMin = q.GetStartTimeMin()
+		params.StartTimeMax = q.GetStartTimeMax()
+		// Service name is duplicated between request and query in some clients.
+		if params.ServiceName == "" {
+			params.ServiceName = q.GetServiceName()
+		}
+	}
+	names, err := h.QueryService.GetTopKAttributeValues(ctx, params)
+	if err != nil {
+		return nil, err
+	}
 	return &api_v3.GetTopKAttributeValuesResponse{
-		Values: []string{"GET"}, // TODO: implement GetTopKAttributeValues in QueryService and return actual values
-	}, nil
-}
-
-func (h *Handler) GetBottomKAttributeValues(
-	_ context.Context,
-	_ *api_v3.GetBottomKAttributeValuesRequest,
-) (*api_v3.GetBottomKAttributeValuesResponse, error) {
-	_ = h
-	return &api_v3.GetBottomKAttributeValuesResponse{
-		Values: []string{"GET"}, // TODO: implement GetBottomKAttributeValues in QueryService and return actual values
+		Values: names,
 	}, nil
 }
 
@@ -192,8 +214,13 @@ func receiveTraces(
 		for _, trace := range traces {
 			tracesData := jptrace.TracesData(trace)
 			if err := sendFn(&tracesData); err != nil {
-				return status.Error(codes.Internal,
-					fmt.Sprintf("failed to send response stream chunk to client: %v", err))
+				return status.Error(
+					codes.Internal,
+					fmt.Sprintf(
+						"failed to send response stream chunk to client: %v",
+						err,
+					),
+				)
 			}
 		}
 	}

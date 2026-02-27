@@ -24,9 +24,26 @@ type GetIndexedAttributesNamesParams struct {
 	Limit         int
 }
 
+type GetTopKAttributeValuesParams struct {
+	WorkspaceId   string
+	ServiceName   string
+	OperationName string
+	AttributeName string
+	K             int
+	StartTimeMin  time.Time
+	StartTimeMax  time.Time
+}
+
 // Reader provides access to attributes metadata for querying.
 type Reader interface {
 	// GetIndexedAttributesNames returns a list of "indexed" attribute names that
 	// the backend can efficiently search/filter on.
-	GetIndexedAttributesNames(ctx context.Context, params GetIndexedAttributesNamesParams) ([]string, error)
+	GetIndexedAttributesNames(
+		ctx context.Context,
+		params GetIndexedAttributesNamesParams,
+	) ([]string, error)
+	GetTopKAttributeValues(
+		ctx context.Context,
+		params GetTopKAttributeValuesParams,
+	) ([]string, error)
 }
