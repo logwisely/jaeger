@@ -5,12 +5,16 @@ package jtracer
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
 	"github.com/jaegertracing/jaeger/internal/testutils"
 )
@@ -64,6 +68,34 @@ func TestInitHelperResourceError(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, tp)
 	require.EqualError(t, err, fakeErr.Error())
+}
+
+func TestInitHelperUsesXRayIDGenerator(t *testing.T) {
+	tp, err := initHelper(
+		context.Background(),
+		"svc",
+		func(_ context.Context) (sdktrace.SpanExporter, error) {
+			return tracetest.NewNoopExporter(), nil
+		},
+		func(_ context.Context, _ /* svc */ string) (*resource.Resource, error) {
+			return resource.Empty(), nil
+		},
+	)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, tp.Shutdown(context.Background()))
+	}()
+
+	_, span := tp.Tracer("jtracer-test").Start(context.Background(), "span")
+	defer span.End()
+
+	traceID := span.SpanContext().TraceID()
+	require.True(t, traceID.IsValid())
+
+	tsHex := hex.EncodeToString(traceID[:4])
+	ts, err := strconv.ParseInt(tsHex, 16, 64)
+	require.NoError(t, err)
+	require.WithinDuration(t, time.Now(), time.Unix(ts, 0), 10*time.Second)
 }
 
 func TestMain(m *testing.M) {

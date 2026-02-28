@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -66,6 +67,7 @@ func initHelper(
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithSpanProcessor(bsp),
 		sdktrace.WithResource(res),
+		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
 	)
 
 	once.Do(func() {
