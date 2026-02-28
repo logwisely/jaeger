@@ -147,6 +147,7 @@ require (
 	go.opentelemetry.io/collector/config/configopaque v1.52.0 // indirect
 	go.opentelemetry.io/collector/internal/componentalias v0.146.1 // indirect
 	go.opentelemetry.io/collector/semconv v0.128.1-0.20250610090210-188191247685 // indirect
+	go.opentelemetry.io/contrib/propagators/aws v1.31.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
