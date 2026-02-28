@@ -257,10 +257,14 @@ func validSpan(resourceAttributes pcommon.Map, scope pcommon.InstrumentationScop
 	}
 
 	if errAttribute, ok := query.Attributes.Get(errorAttribute); ok {
-		if errAttribute.Bool() && span.Status().Code() != ptrace.StatusCodeError {
+		wantError, ok := boolFromQueryValue(errAttribute)
+		if !ok {
 			return false
 		}
-		if !errAttribute.Bool() && span.Status().Code() != ptrace.StatusCodeOk {
+		if wantError && span.Status().Code() != ptrace.StatusCodeError {
+			return false
+		}
+		if !wantError && span.Status().Code() != ptrace.StatusCodeOk {
 			return false
 		}
 	}
@@ -313,6 +317,25 @@ func validSpan(resourceAttributes pcommon.Map, scope pcommon.InstrumentationScop
 	}
 
 	return true
+}
+
+func boolFromQueryValue(v pcommon.Value) (bool, bool) {
+	switch v.Type() {
+	case pcommon.ValueTypeBool:
+		return v.Bool(), true
+	case pcommon.ValueTypeStr:
+		s := strings.TrimSpace(strings.ToLower(v.Str()))
+		switch s {
+		case "true", "1":
+			return true, true
+		case "false", "0":
+			return false, true
+		default:
+			return false, false
+		}
+	default:
+		return false, false
+	}
 }
 
 func matchAttributes(key string, val pcommon.Value, attrs pcommon.Map) bool {
