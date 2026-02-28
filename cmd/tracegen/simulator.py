@@ -150,4 +150,5 @@ if __name__ == "__main__":
         client_make_request(i)
         time.sleep(0.5)
 
+    time.sleep(3)
     print("\nSimulation complete. Traces sent to localhost:4317.")
