@@ -21,9 +21,14 @@ exporter = OTLPSpanExporter(
 # --------------------------------------------------
 # Client Service Setup
 # --------------------------------------------------
-
 client_provider = TracerProvider(
-    resource=Resource.create({"service.name": "payment-client"})
+    resource=Resource.create(
+        {
+            "service.name": "payment-client",
+            "demo.foo": "bar",
+            "demo.bar": "baz",
+        }
+    )
 )
 client_provider.add_span_processor(BatchSpanProcessor(exporter))
 client_tracer = client_provider.get_tracer("payment-client")
@@ -33,7 +38,13 @@ client_tracer = client_provider.get_tracer("payment-client")
 # --------------------------------------------------
 
 server_provider = TracerProvider(
-    resource=Resource.create({"service.name": "payment-server"})
+    resource=Resource.create(
+        {
+            "service.name": "payment-server",
+            "demo.host": "my-host",
+            "demo.port": 1234,
+        }
+    )
 )
 server_provider.add_span_processor(BatchSpanProcessor(exporter))
 server_tracer = server_provider.get_tracer("payment-server")
