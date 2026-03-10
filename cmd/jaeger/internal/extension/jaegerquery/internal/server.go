@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/collector/config/configgrpc"
 	"go.opentelemetry.io/collector/config/confighttp/xconfighttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -201,6 +202,7 @@ func initRouter(
 		handler = tenancy.ExtractTenantHTTPHandler(tenancyMgr, handler)
 	}
 	handler = traceResponseHandler(handler)
+	handler = setSpanNameFromPattern(handler, queryOpts.BasePath)
 	return handler, staticHandlerCloser
 }
 
@@ -232,23 +234,6 @@ func createHTTPServer(
 				ignorePath := path.Join("/", queryOpts.BasePath, "static")
 				return !strings.HasPrefix(r.URL.Path, ignorePath)
 			}),
-			otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
-				// Use just the route pattern without the HTTP method prefix or basePath
-				// r.Pattern includes the method like "GET /jaeger/api/v3/traces/{trace_id}"
-				// We want to return just "/api/v3/traces/{trace_id}" (without basePath)
-				pattern := r.Pattern
-				if pattern != "" {
-					// Remove the method prefix (e.g., "GET ", "POST ", etc.)
-					if idx := strings.Index(pattern, " "); idx > 0 {
-						pattern = pattern[idx+1:]
-					}
-					// Remove basePath prefix if present
-					if queryOpts.BasePath != "" && queryOpts.BasePath != "/" {
-						pattern = strings.TrimPrefix(pattern, queryOpts.BasePath)
-					}
-				}
-				return pattern
-			}),
 		),
 	)
 	if err != nil {
@@ -269,6 +254,89 @@ func (hS httpServer) Close() error {
 		hS.staticHandlerCloser.Close(),
 	)
 	return errors.Join(errs...)
+}
+
+func setSpanNameFromPattern(next http.Handler, basePath string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+
+		span := trace.SpanFromContext(r.Context())
+		if span == nil || !span.SpanContext().IsValid() {
+			return
+		}
+
+		span.SetName(spanNameFromRequest(r, basePath))
+	})
+}
+
+func spanNameFromRequest(r *http.Request, basePath string) string {
+	pattern := r.Pattern
+	if pattern != "" {
+		// Remove the method prefix (e.g., "GET ", "POST ", etc.)
+		if idx := strings.Index(pattern, " "); idx > 0 {
+			pattern = pattern[idx+1:]
+		}
+		// Remove basePath prefix if present
+		if basePath != "" && basePath != "/" {
+			pattern = strings.TrimPrefix(pattern, basePath)
+		}
+		return pattern
+	}
+
+	path := r.URL.Path
+	if basePath != "" && basePath != "/" {
+		path = strings.TrimPrefix(path, basePath)
+	}
+	path = sanitizePath(path)
+	return r.Method + " " + path
+}
+
+func sanitizePath(path string) string {
+	if strings.HasPrefix(path, "/api/traces/") {
+		return "/api/traces/{traceID}"
+	}
+	if strings.HasPrefix(path, "/api/v3/traces/") {
+		return "/api/v3/traces/{trace_id}"
+	}
+
+	segments := strings.Split(path, "/")
+	for i, seg := range segments {
+		if looksLikeTraceID(seg) || looksLikeUUID(seg) {
+			segments[i] = "{id}"
+		}
+	}
+	return strings.Join(segments, "/")
+}
+
+func looksLikeTraceID(seg string) bool {
+	if len(seg) != 16 && len(seg) != 32 {
+		return false
+	}
+	for _, r := range seg {
+		if (r < '0' || r > '9') && (r < 'a' || r > 'f') && (r < 'A' || r > 'F') {
+			return false
+		}
+	}
+	return true
+}
+
+func looksLikeUUID(seg string) bool {
+	if len(seg) != 36 {
+		return false
+	}
+	for i, r := range seg {
+		switch i {
+		case 8, 13, 18, 23:
+			if r != '-' {
+				return false
+			}
+		default:
+			if (r < '0' || r > '9') && (r < 'a' || r > 'f') && (r < 'A' || r > 'F') {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // initListener initialises listeners of the server
