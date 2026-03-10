@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc"
@@ -61,7 +62,7 @@ func NewFactory(
 		writerConfig = cfg.ClientConfig
 	}
 
-	readerTelset := getTelset(f.telset, f.telset.TracerProvider)
+	readerTelset := getTelset(f.telset, otel.GetTracerProvider())
 	writerTelset := getTelset(f.telset, noop.NewTracerProvider())
 	newClientFn := func(telset component.TelemetrySettings, gcs *configgrpc.ClientConfig, opts ...grpc.DialOption) (conn *grpc.ClientConn, err error) {
 		clientOpts := make([]configgrpc.ToClientConnOption, 0)
@@ -143,7 +144,8 @@ func (f *Factory) initializeConnections(
 	createConn := func(telset component.TelemetrySettings, gcs *configgrpc.ClientConfig) (*grpc.ClientConn, error) {
 		opts := append(baseOpts, grpc.WithStatsHandler(
 			otelgrpc.NewClientHandler(
-				otelgrpc.WithTracerProvider(telset.TracerProvider),
+				otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
+				otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
 				otelgrpc.WithMeterProvider(telset.MeterProvider),
 			),
 		))
