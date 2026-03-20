@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "dagMaxNumServices": 200,
+    "menuEnabled": false
+  },
+  "monitor": {
+    "menuEnabled": false
+  },
+  "archiveEnabled": false,
+  "search": {
+    "maxLookback": {
+      "label": "3 Days",
+      "value": "3d"
+    },
+    "maxLimit": 100
+  }
+}
