@@ -13,7 +13,6 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-logr/zapr v1.3.0
 	github.com/gogo/protobuf v1.3.2
-	github.com/google/gnostic-models v0.7.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/jaegertracing/jaeger-idl v0.6.0
 	github.com/kr/pretty v0.3.1
@@ -89,6 +88,7 @@ require (
 	go.opentelemetry.io/collector/receiver/otlpreceiver v0.146.1
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.65.0
+	go.opentelemetry.io/contrib/propagators/aws v1.31.0
 	go.opentelemetry.io/contrib/samplers/jaegerremote v0.34.0
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.40.0
@@ -104,7 +104,7 @@ require (
 	go.uber.org/goleak v1.3.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/sys v0.41.0
-	google.golang.org/grpc v1.79.1
+	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -147,7 +147,6 @@ require (
 	go.opentelemetry.io/collector/config/configopaque v1.52.0 // indirect
 	go.opentelemetry.io/collector/internal/componentalias v0.146.1 // indirect
 	go.opentelemetry.io/collector/semconv v0.128.1-0.20250610090210-188191247685 // indirect
-	go.opentelemetry.io/contrib/propagators/aws v1.31.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
@@ -339,7 +338,7 @@ require (
 	golang.org/x/exp v0.0.0-20260209203927-2842357ff358
 	golang.org/x/text v0.34.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409
+	google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
