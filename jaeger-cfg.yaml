@@ -1,0 +1,85 @@
+# jaeger-config.yaml
+# Jaeger v2 — Badger storage + bearer token propagation
+
+extensions:
+  healthcheckv2:
+    use_v2: true
+    http:
+      endpoint: 0.0.0.0:14133
+      status:
+        enabled: true
+        path: "/status"
+
+  jaeger_storage:
+    backends:
+      primary_store:
+        badger:
+          ephemeral: true # set true for tmpfs/dev, false for persistent
+          directories:
+            keys: "/tmp/badger/keys"         # should be on SSD
+            values: "/tmp/badger/values"
+          ttl:
+            spans: 72h                   # how long spans are retained
+          maintenance_interval: 5m
+      archive_store:
+        badger:
+          ephemeral: true
+          directories:
+            keys: "/tmp/badger/archive/keys"
+            values: "/tmp/badger/archive/values"
+          ttl:
+            spans: 720h                  # longer retention for archive
+
+  jaeger_query:
+    storage:
+      traces: primary_store
+      traces_archive: archive_store
+    bearer_token_propagation: true       # <-- passes OAuth token to storage plugin
+    propagate_headers: ["x-foo", "x-bar", "x-baz"]
+    multi_tenancy:
+      enabled: true
+      header: Host
+    base_path: /
+    http:
+      endpoint: 0.0.0.0:16686
+    grpc:
+      endpoint: 0.0.0.0:16685
+    ui:
+      log_access: true
+      config_file: "./ui.json"
+
+service:
+  extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger_storage_exporter]
+  telemetry:
+    resource:
+      service.name: jaeger
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
+    logs:
+      level: info
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: primary_store
